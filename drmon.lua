@@ -115,6 +115,10 @@ function buttons()
       delta = -1000000
     elseif xPos >= 26 and xPos <= 30 then
       delta = -10000000
+    elseif xPos >= 31 and xPos <= 35 then
+      delta = -100000000
+    elseif xPos >= r-35 and xPos <= r-31 then
+      delta = 100000000
     elseif xPos >= r-30 and xPos <= r-26 then
       delta = 10000000
     elseif xPos >= r-24 and xPos <= r-20 then
@@ -171,6 +175,11 @@ function buttons()
       reactor.toggleFailSafe()
     end
 
+    -- Computer Control
+    if yPos == 2 and xPos >= 36 and xPos < 36+6 then
+      os.reboot()
+    end
+
   end
 end
 
@@ -192,6 +201,8 @@ function drawControlButtons()
     f.draw_text(mon, 20, 2, controlText, controlColor, controlBackgroundColor)
     -- Fail Safe Toggle
     f.draw_text(mon, 30, 2, "SAS", failSafeColor, colors.gray)
+    -- Computer Control
+    f.draw_text(mon, 36, 2, "REBOOT", colors.orange, colors.gray)
 end
 
 function drawFluxGateButtons(y)
@@ -208,8 +219,10 @@ function drawFluxGateButtons(y)
   f.draw_text(mon, 14, y, "-100k", colors.white, colors.gray)
   f.draw_text(mon, 20, y, " -1M ", colors.white, colors.gray)
   f.draw_text(mon, 26, y, " -10M", colors.white, colors.gray)
+  f.draw_text(mon, 31, y, "-100M", colors.white, colors.gray)
 
   -- right buttons (anchored from right)
+  f.draw_text(mon, r-31, y, "+100M", colors.white, colors.gray)
   f.draw_text(mon, r-26, y, " +10M", colors.white, colors.gray)
   f.draw_text(mon, r-20, y, " +1M ", colors.white, colors.gray)
   f.draw_text(mon, r-14, y, "+100k", colors.white, colors.gray)
