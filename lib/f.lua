@@ -1,9 +1,19 @@
 -- math
 
+function sign(number)
+    if number > 0 then
+        return 1
+    elseif number < 0 then
+        return -1
+    else
+        return 0
+    end
+end
+
 function approach(current, target, speed, minValue)
     minValue = minValue or 1
     local distance = target - current
-    local step = math.sign(distance) * (math.abs(distance)^2) * speed
+    local step = sign(distance) * (math.abs(distance)^2) * speed
 
 	-- Prevent tiny floating point oscillations
     if math.abs(distance) <= minValue then
