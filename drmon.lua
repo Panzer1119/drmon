@@ -132,16 +132,18 @@ function buttons()
       save_config()
     end
 
+    local isXToggleButton = xPos >= middle-1 and xPos <= middle+2
+
     -- input gate controls
     -- 2-4 = -1000, 6-9 = -10000, 10-12,8 = -100000
     -- 17-19 = +1000, 21-23 = +10000, 25-27 = +100000
-    if yPos == 10 and autoInputGate == 0 and xPos ~= middle and xPos ~= middle+1 then
+    if yPos == 10 and autoInputGate == 0 and not isXToggleButton then
       targetInputGate = targetInputGate + delta
       save_config()
     end
 
     -- input gate toggle
-    if yPos == 10 and ( xPos == middle or xPos == middle+1) then
+    if yPos == 10 and isXToggleButton then
       if autoInputGate == 1 then
         autoInputGate = 0
       else
@@ -279,9 +281,9 @@ function update()
     local right = mon.X
     local middle = math.floor(right/2)
     if autoInputGate == 1 then
-      f.draw_text(mon, middle, 10, "AU", colors.white, colors.gray)
+      f.draw_text(mon, middle-1, 10, "AUTO", colors.white, colors.gray)
     else
-      f.draw_text(mon, middle, 10, "MA", colors.white, colors.gray)
+      f.draw_text(mon, middle-1, 10, "MANU", colors.white, colors.gray)
       drawButtons(10)
     end
 
