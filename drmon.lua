@@ -115,9 +115,9 @@ function buttons()
       delta = -1000000
     elseif xPos >= 26 and xPos <= 30 then
       delta = -10000000
-    elseif xPos >= 31 and xPos <= 35 then
+    elseif xPos >= 32 and xPos <= 36 then
       delta = -100000000
-    elseif xPos >= r-35 and xPos <= r-31 then
+    elseif xPos >= r-36 and xPos <= r-32 then
       delta = 100000000
     elseif xPos >= r-30 and xPos <= r-26 then
       delta = 10000000
@@ -219,10 +219,10 @@ function drawFluxGateButtons(y)
   f.draw_text(mon, 14, y, "-100k", colors.white, colors.gray)
   f.draw_text(mon, 20, y, " -1M ", colors.white, colors.gray)
   f.draw_text(mon, 26, y, " -10M", colors.white, colors.gray)
-  f.draw_text(mon, 31, y, "-100M", colors.white, colors.gray)
+  f.draw_text(mon, 32, y, "-100M", colors.white, colors.gray)
 
   -- right buttons (anchored from right)
-  f.draw_text(mon, r-31, y, "+100M", colors.white, colors.gray)
+  f.draw_text(mon, r-32, y, "+100M", colors.white, colors.gray)
   f.draw_text(mon, r-26, y, " +10M", colors.white, colors.gray)
   f.draw_text(mon, r-20, y, " +1M ", colors.white, colors.gray)
   f.draw_text(mon, r-14, y, "+100k", colors.white, colors.gray)
@@ -369,7 +369,7 @@ function update()
     local satPercent
     satPercent = math.ceil(ri.energySaturation / ri.maxEnergySaturation * 10000)*.01
 
-    f.draw_text_lr(mon, 2, 11, 1, "Energy Saturation", string.format("%.2f %%", satPercent), colors.white, colors.white, colors.black)
+    f.draw_text_lr(mon, 2, 11, 1, "Energy Saturation", "Current: " .. string.format("%.2f %%", satPercent), colors.white, colors.white, colors.black)
     f.progress_bar(mon, 2, 12, mon.X-2, satPercent, 100, colors.blue, colors.gray)
 
     local fieldPercent, fieldColor
@@ -387,7 +387,7 @@ function update()
     local lowestFieldCount = math.floor(lowestFieldPercent * (mon.X-2) / 100)
     --TODO Draw that many X at the start of the progress bar to mark the death range?
     if autoInputGate == 1 then 
-      f.draw_text_llr(mon, 2, 14, 1, "Field Strength Lowest: " .. lowestFieldPercent, "Target: " .. targetStrength, string.format("%.2f %%", fieldPercent), colors.white, targetFieldColor, fieldColor, colors.black)
+      f.draw_text_llr(mon, 2, 14, 1, "Field Strength Lowest: " .. lowestFieldPercent, "Target: " .. targetStrength, "Current: " .. string.format("%.2f %%", fieldPercent), colors.white, targetFieldColor, fieldColor, colors.black)
 	  --f.progress_bar_dual(mon, 2, 15, mon.X-2, fieldPercent, targetStrength, fieldColor, targetFieldColor, colors.gray, 100)
       f.draw_layered_progress_bar(mon, 2, 15, mon.X-2, {
         { value = lowestFieldPercent, color = colors.red, symbol = "X", symbol_color = colors.black },
@@ -396,7 +396,7 @@ function update()
         { value = 100, color = colors.gray },
       }, colors.gray)
     else
-      f.draw_text_lr(mon, 2, 14, 1, "Field Strength Lowest: " .. lowestFieldPercent, string.format("%.2f %%", fieldPercent), colors.white, fieldColor, colors.black)
+      f.draw_text_lr(mon, 2, 14, 1, "Field Strength Lowest: " .. lowestFieldPercent, "Current: " .. string.format("%.2f %%", fieldPercent), colors.white, fieldColor, colors.black)
 	  f.progress_bar(mon, 2, 15, mon.X-2, fieldPercent, 100, fieldColor, colors.gray)
     end
 
@@ -409,7 +409,7 @@ function update()
     if fuelPercent >= 70 then fuelColor = colors.green end
     if fuelPercent < 70 and fuelPercent > 30 then fuelColor = colors.orange end
 
-    f.draw_text_lr(mon, 2, 17, 1, "Fuel ", string.format("%.2f %%", fuelPercent), colors.white, fuelColor, colors.black)
+    f.draw_text_lr(mon, 2, 17, 1, "Fuel ", "Current: " .. string.format("%.2f %%", fuelPercent), colors.white, fuelColor, colors.black)
     f.progress_bar(mon, 2, 18, mon.X-2, fuelPercent, 100, fuelColor, colors.gray)
 
     f.draw_text_lr(mon, 2, 19, 1, "Action ", action, colors.gray, colors.gray, colors.black)
