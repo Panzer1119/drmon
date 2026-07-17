@@ -195,6 +195,56 @@ function progress_bar_dual(mon, x, y, length, current, target, current_color, ta
 
 end
 
+---Draws an overlapping progress bar.
+---@param mon table Monitor or terminal object.
+---@param x integer Left position.
+---@param y integer Top position.
+---@param width integer Width of the bar in characters.
+---@param values table Array of { value = number, color = color }.
+function draw_layered_progress_bar(mon, x, y, width, values, bg_color)
+    bg_color = bg_color or colors.gray
+
+    -- Find maximum
+    local max = 0
+    for _, v in ipairs(values) do
+        if v.value > max then
+            max = v.value
+        end
+    end
+
+    if max == 0 then
+        --mon.setBackgroundColor(colors.black)
+        --mon.setCursorPos(x, y)
+        --mon.write(string.rep(" ", width))
+        draw_line(mon, x, y, width, bg_color)
+        return
+    end
+
+    -- Copy so we don't modify the caller's table
+    local bars = {}
+    for i, v in ipairs(values) do
+        bars[i] = {
+            value = v.value,
+            color = v.color,
+        }
+    end
+
+    -- Largest first
+    table.sort(bars, function(a, b)
+        return a.value > b.value
+    end)
+
+    -- Draw from largest to smallest
+    for _, bar in ipairs(bars) do
+        local w = math.floor(bar.value / max * width + 0.5)
+
+        --mon.setBackgroundColor(bar.color)
+        --mon.setCursorPos(x, y)
+        --mon.write(string.rep(" ", w))
+        draw_line(mon, x, y, w, bar.color)
+    end
+end
+
 
 function clear(mon)
   term.clear()
