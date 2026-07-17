@@ -89,7 +89,7 @@ end
 
 function draw_text_llr(mon, x, y, offset, textl1, textl2, textr1, textl1_color, textl2_color, textr1_color, bg_color)
 	draw_text(mon, x, y, textl1, textl1_color, bg_color)
-	draw_text(mon, x + 1 + #textl1, y, textl2, textl2_color, bg_color)
+	draw_text(mon, x + 1 + string.len(tostring(textl1)), y, textl2, textl2_color, bg_color)
 	draw_text_right(mon, offset, y, textr1, textr1_color, bg_color)
 end
 
