@@ -39,6 +39,7 @@ local ri
 local action = "None since reboot"
 local emergencyCharge = false
 local emergencyTemp = false
+local emergencyStopOutputIncrease = false
 
 monitor_peripheral = f.periphSearch("monitor")
 monitor = window.create(monitor_peripheral, 1, 1, monitor_peripheral.getSize()) -- create a window on the monitor
@@ -258,7 +259,7 @@ function updateFluxGates(currentInputGate, currentOutputGate)
 
     if targetOutputGate <= currentOutputGate then
         currentOutputGate = targetOutputGate
-    else
+    elseif not emergencyStopOutputIncrease then
         currentOutputGate = f.approach(
             currentOutputGate,
             targetOutputGate,
@@ -361,13 +362,20 @@ function update()
     if ri.temperature <= 5000 then tempColor = colors.green end
     if ri.temperature >= 5000 and ri.temperature <= 6500 then tempColor = colors.orange end
     f.draw_text_lr(mon, 2, 6, 1, "Temperature", f.format_int(ri.temperature, 2) .. " C", colors.white, tempColor, colors.black)
-
-    f.draw_text_lmr(mon, 2, 7, 1, "Output Gate", f.format_int(currentOutputGate) .. " rf/t", f.format_int(targetOutputGate) .. " rf/t", colors.white, colors.cyan, colors.blue, colors.black)
+    local currentOutputColor = colors.cyan
+    if emergencyStopOutputIncrease then
+        currentOutputColor = colors.red
+    end
+    f.draw_text_lmr(mon, 2, 7, 1, "Output Gate", f.format_int(currentOutputGate) .. " rf/t", f.format_int(targetOutputGate) .. " rf/t", colors.white, currentOutputColor, colors.blue, colors.black)
 
     -- buttons
     drawFluxGateButtons(8)
 
-    f.draw_text_lmr(mon, 2, 9, 1, "Input Gate", f.format_int(currentInputGate) .. " rf/t", f.format_int(targetInputGate) .. " rf/t", colors.white, colors.cyan, colors.blue, colors.black)
+    local currentInputColor = colors.cyan
+    if emergencyCharge then
+        currentInputColor = colors.red
+    end
+    f.draw_text_lmr(mon, 2, 9, 1, "Input Gate", f.format_int(currentInputGate) .. " rf/t", f.format_int(targetInputGate) .. " rf/t", colors.white, currentInputColor, colors.blue, colors.black)
 
     drawControlButtons()
 
@@ -448,11 +456,13 @@ function update()
       reactor.activateReactor()
     end
 
+    emergencyStopOutputIncrease = false
     -- are we on? regulate the input fludgate to our target field strength
     -- or set it to our saved setting since we are on manual
     if ri.status == "running" then
       if autoInputGate == 1 then 
         targetInputGate = ri.fieldDrainRate / (1 - (targetStrength/100) )
+        emergencyStopOutputIncrease = fieldPercent < (targetStrength - 0.1) or fieldPercent < lowestFieldPercent
       end
     end
 
