@@ -53,6 +53,12 @@ function draw_text_lr(mon, x, y, offset, text1, text2, text1_color, text2_color,
 	draw_text_right(mon, offset, y, text2, text2_color, bg_color)
 end
 
+function draw_text_llr(mon, x, y, offset, textl1, textl2, textr1, textl1_color, textl2_color, textr1_color, bg_color)
+	draw_text(mon, x, y, textl1, textl1_color, bg_color)
+	draw_text(mon, x + 1 + #textl1, y, textl2, textl2_color, bg_color)
+	draw_text_right(mon, offset, y, textr1, textr1_color, bg_color)
+end
+
 --draw line on computer terminal
 function draw_line(mon, x, y, length, color)
     if length < 0 then
