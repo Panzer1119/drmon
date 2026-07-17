@@ -10,7 +10,7 @@ local lowestFieldPercent = 3
 local activateOnCharged = 1
 
 local inputRampRate = 1.5
-local outputRampRate = 2
+local outputRampRate = 1
 
 -- please leave things untouched from here on
 os.loadAPI("lib/f")
@@ -462,7 +462,9 @@ function update()
     if ri.status == "running" then
       if autoInputGate == 1 then 
         targetInputGate = ri.fieldDrainRate / (1 - (targetStrength/100) )
-        emergencyStopOutputIncrease = fieldPercent < (targetStrength - 0.1) or fieldPercent < lowestFieldPercent
+        --emergencyStopOutputIncrease = fieldPercent < (targetStrength - 0.1) or fieldPercent < lowestFieldPercent
+        --emergencyStopOutputIncrease = fieldPercent < (lowestFieldPercent + 0.1)
+        emergencyStopOutputIncrease =fieldPercent < 2 * lowestFieldPercent
       end
     end
 
