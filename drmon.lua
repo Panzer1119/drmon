@@ -292,7 +292,7 @@ function update()
     local satPercent
     satPercent = math.ceil(ri.energySaturation / ri.maxEnergySaturation * 10000)*.01
 
-    f.draw_text_lr(mon, 2, 11, 1, "Energy Saturation", string.format("%.2f%%", satPercent), colors.white, colors.white, colors.black)
+    f.draw_text_lr(mon, 2, 11, 1, "Energy Saturation", string.format("%.2f %%", satPercent), colors.white, colors.white, colors.black)
     f.progress_bar(mon, 2, 12, mon.X-2, satPercent, 100, colors.blue, colors.gray)
 
     local fieldPercent, fieldColor
@@ -306,10 +306,10 @@ function update()
     if targetStrength < 50 and targetStrength > 30 then targetFieldColor = colors.yellow end
 
     if autoInputGate == 1 then 
-      f.draw_text_llr(mon, 2, 14, 1, "Field Strength", "T:" .. targetStrength, string.format("%.2f%%", fieldPercent), colors.white, targetFieldColor, fieldColor, colors.black)
+      f.draw_text_llr(mon, 2, 14, 1, "Field Strength Lowest: " .. lowestFieldPercent, "Target: " .. targetStrength, string.format("%.2f %%", fieldPercent), colors.white, targetFieldColor, fieldColor, colors.black)
 	  f.progress_bar_dual(mon, 2, 15, mon.X-2, fieldPercent, targetStrength, fieldColor, targetFieldColor, colors.gray, 100)
     else
-      f.draw_text_lr(mon, 2, 14, 1, "Field Strength", string.format("%.2f%%", fieldPercent), colors.white, fieldColor, colors.black)
+      f.draw_text_lr(mon, 2, 14, 1, "Field Strength Lowest: " .. lowestFieldPercent, string.format("%.2f %%", fieldPercent), colors.white, fieldColor, colors.black)
 	  f.progress_bar(mon, 2, 15, mon.X-2, fieldPercent, 100, fieldColor, colors.gray)
     end
 
@@ -322,7 +322,7 @@ function update()
     if fuelPercent >= 70 then fuelColor = colors.green end
     if fuelPercent < 70 and fuelPercent > 30 then fuelColor = colors.orange end
 
-    f.draw_text_lr(mon, 2, 17, 1, "Fuel ", string.format("%.2f%%", fuelPercent), colors.white, fuelColor, colors.black)
+    f.draw_text_lr(mon, 2, 17, 1, "Fuel ", string.format("%.2f %%", fuelPercent), colors.white, fuelColor, colors.black)
     f.progress_bar(mon, 2, 18, mon.X-2, fuelPercent, 100, fuelColor, colors.gray)
 
     f.draw_text_lr(mon, 2, 19, 1, "Action ", action, colors.gray, colors.gray, colors.black)
