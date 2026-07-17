@@ -167,7 +167,7 @@ function buttons()
     end
 
     -- Fail Safe Toggle
-    if yPos == 2 and xPos >= 30 and xPos < 39 then
+    if yPos == 2 and xPos >= 30 and xPos < 30+3 then
       reactor.toggleFailSafe()
     end
 
@@ -191,7 +191,7 @@ function drawControlButtons()
     end
     f.draw_text(mon, 20, 2, controlText, controlColor, controlBackgroundColor)
     -- Fail Safe Toggle
-    f.draw_text(mon, 30, 2, "FAIL SAFE", failSafeColor, colors.gray)
+    f.draw_text(mon, 30, 2, "SAS", failSafeColor, colors.gray)
 end
 
 function drawFluxGateButtons(y)
