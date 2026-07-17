@@ -155,6 +155,17 @@ function buttons()
   end
 end
 
+function drawControlButtons()
+    local width = mon.X
+    local middle = math.floor(width/2)
+    if autoInputGate == 1 then
+      f.draw_text(mon, middle-1, 10, "AUTO", colors.white, colors.gray)
+    else
+      f.draw_text(mon, middle-1, 10, "MANU", colors.white, colors.gray)
+      drawFluxGateButtons(10)
+    end
+end
+
 function drawFluxGateButtons(y)
   -- Button layout:
   -- left side:  -1k -10k -100k -1M -10M
@@ -280,14 +291,7 @@ function update()
 
     f.draw_text_lmr(mon, 2, 9, 1, "Input Gate", f.format_int(currentInputGate) .. " rf/t", f.format_int(targetInputGate) .. " rf/t", colors.white, colors.cyan, colors.blue, colors.black)
 
-    local width = mon.X
-    local middle = math.floor(width/2)
-    if autoInputGate == 1 then
-      f.draw_text(mon, middle-1, 10, "AUTO", colors.white, colors.gray)
-    else
-      f.draw_text(mon, middle-1, 10, "MANU", colors.white, colors.gray)
-      drawFluxGateButtons(10)
-    end
+    drawControlButtons()
 
     local satPercent
     satPercent = math.ceil(ri.energySaturation / ri.maxEnergySaturation * 10000)*.01
