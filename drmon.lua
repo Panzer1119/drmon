@@ -466,7 +466,7 @@ function update()
         targetInputGate = ri.fieldDrainRate / (1 - (targetStrength/100) )
         --emergencyStopOutputIncrease = fieldPercent < (targetStrength - 0.1) or fieldPercent < lowestFieldPercent
         --emergencyStopOutputIncrease = fieldPercent < (lowestFieldPercent + 0.1)
-        emergencyStopOutputIncrease =fieldPercent < 2 * lowestFieldPercent
+        emergencyStopOutputIncrease = fieldPercent < 2 * lowestFieldPercent
       end
     end
 
