@@ -9,7 +9,7 @@ local lowestFieldPercent = 3
 
 local activateOnCharged = 1
 
-local inputRampRate = 1
+local inputRampRate = 1.5
 local outputRampRate = 2
 
 -- please leave things untouched from here on
@@ -284,6 +284,11 @@ function update()
     -- Read actual gate values
     currentInputGate = inputFluxgate.getSignalLowFlow()
     currentOutputGate = outputFluxgate.getSignalLowFlow()
+
+    if ri == nil then
+        -- WTF why should this happen?
+        print("No reactor info")
+    end
 
     local netPositive = ri.generationRate - currentInputGate
 
