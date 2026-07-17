@@ -98,7 +98,7 @@ function buttons()
     event, side, xPos, yPos = os.pullEvent("monitor_touch")
 
     local right = mon.X
-    local r = right - 4 + 1
+    local r = right - 4 + 1 + 4
 
     local delta = 0
     if xPos >= 2 and xPos <= 6 then
