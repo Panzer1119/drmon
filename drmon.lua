@@ -280,8 +280,8 @@ function update()
 
     f.draw_text_lmr(mon, 2, 9, 1, "Input Gate", f.format_int(currentInputGate) .. " rf/t", f.format_int(targetInputGate) .. " rf/t", colors.white, colors.cyan, colors.blue, colors.black)
 
-    local right = mon.X
-    local middle = math.floor(right/2)
+    local width = mon.X
+    local middle = math.floor(width/2)
     if autoInputGate == 1 then
       f.draw_text(mon, middle-1, 10, "AUTO", colors.white, colors.gray)
     else
@@ -305,6 +305,8 @@ function update()
     if targetStrength >= 50 then targetFieldColor = colors.lime end
     if targetStrength < 50 and targetStrength > 30 then targetFieldColor = colors.yellow end
 
+    local lowestFieldCount = math.floor(lowestFieldPercent * (width-2) / 100)
+    --TODO Draw that many X at the start of the progress bar to mark the death range?
     if autoInputGate == 1 then 
       f.draw_text_llr(mon, 2, 14, 1, "Field Strength Lowest: " .. lowestFieldPercent, "Target: " .. targetStrength, string.format("%.2f %%", fieldPercent), colors.white, targetFieldColor, fieldColor, colors.black)
 	  f.progress_bar_dual(mon, 2, 15, mon.X-2, fieldPercent, targetStrength, fieldColor, targetFieldColor, colors.gray, 100)
