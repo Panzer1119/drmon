@@ -14,17 +14,21 @@ end
 
 -- formatting
 
-function format_int(number)
+function format_int(number, decimals)
 
-	if number == nil then number = 0 end
+  if number == nil then number = 0 end
+  decimals = decimals or 0
 
-  local i, j, minus, int, fraction = tostring(number):find('([-]?)(%d+)([.]?%d*)')
-  -- reverse the int-string and append a comma to all blocks of 3 digits
+  -- Round and format to the requested number of decimal places
+  local str = string.format("%." .. decimals .. "f", number)
+
+  local minus, int, fraction = str:match("([-]?)(%d+)(%.?%d*)")
+
+  -- Add commas every 3 digits
   int = int:reverse():gsub("(%d%d%d)", "%1,")
+  int = int:reverse():gsub("^,", "")
 
-  -- reverse the int-string back remove an optional comma and put the
-  -- optional minus and fractional part back
-  return minus .. int:reverse():gsub("^,", "") .. fraction
+  return minus .. int .. fraction
 end
 
 -- monitor related
