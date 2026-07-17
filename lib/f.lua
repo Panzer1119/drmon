@@ -36,33 +36,35 @@ end
 -- peripheral identification
 --
 function periphSearch(type)
-   local names = peripheral.getNames()
-   local i, name
-   for i, name in pairs(names) do
-      if peripheral.getType(name) == type then
-         return peripheral.wrap(name)
-      end
-   end
-   return nil
+    local names = peripheral.getNames()
+    local i, name
+    for i, name in pairs(names) do
+        if peripheral.getType(name) == type then
+            return peripheral.wrap(name)
+        end
+    end
+    return nil
 end
 
 -- formatting
 
 function format_int(number, decimals)
 
-  if number == nil then number = 0 end
-  decimals = decimals or 0
+    if number == nil then
+        number = 0
+    end
+    decimals = decimals or 0
 
-  -- Round and format to the requested number of decimal places
-  local str = string.format("%." .. decimals .. "f", number)
+    -- Round and format to the requested number of decimal places
+    local str = string.format("%." .. decimals .. "f", number)
 
-  local minus, int, fraction = str:match("([-]?)(%d+)(%.?%d*)")
+    local minus, int, fraction = str:match("([-]?)(%d+)(%.?%d*)")
 
-  -- Add commas every 3 digits
-  int = int:reverse():gsub("(%d%d%d)", "%1,")
-  int = int:reverse():gsub("^,", "")
+    -- Add commas every 3 digits
+    int = int:reverse():gsub("(%d%d%d)", "%1,")
+    int = int:reverse():gsub("^,", "")
 
-  return minus .. int .. fraction
+    return minus .. int .. fraction
 end
 
 function centerPad(str, length)
@@ -83,35 +85,35 @@ end
 
 --display text text on monitor, "mon" peripheral
 function draw_text(mon, x, y, text, text_color, bg_color)
-  mon.monitor.setBackgroundColor(bg_color)
-  mon.monitor.setTextColor(text_color)
-  mon.monitor.setCursorPos(x,y)
-  mon.monitor.write(text)
+    mon.monitor.setBackgroundColor(bg_color)
+    mon.monitor.setTextColor(text_color)
+    mon.monitor.setCursorPos(x,y)
+    mon.monitor.write(text)
 end
 
 function draw_text_right(mon, offset, y, text, text_color, bg_color)
-  mon.monitor.setBackgroundColor(bg_color)
-  mon.monitor.setTextColor(text_color)
-  mon.monitor.setCursorPos(mon.X-string.len(tostring(text))-offset,y)
-  mon.monitor.write(text)
+    mon.monitor.setBackgroundColor(bg_color)
+    mon.monitor.setTextColor(text_color)
+    mon.monitor.setCursorPos(mon.X-string.len(tostring(text))-offset,y)
+    mon.monitor.write(text)
 end
 
 function draw_text_lr(mon, x, y, offset, text1, text2, text1_color, text2_color, bg_color)
-	draw_text(mon, x, y, text1, text1_color, bg_color)
-	draw_text_right(mon, offset, y, text2, text2_color, bg_color)
+    draw_text(mon, x, y, text1, text1_color, bg_color)
+    draw_text_right(mon, offset, y, text2, text2_color, bg_color)
 end
 
 function draw_text_llr(mon, x, y, offset, textl1, textl2, textr1, textl1_color, textl2_color, textr1_color, bg_color)
-	draw_text(mon, x, y, textl1, textl1_color, bg_color)
-	draw_text(mon, x + 1 + string.len(tostring(textl1)), y, textl2, textl2_color, bg_color)
-	draw_text_right(mon, offset, y, textr1, textr1_color, bg_color)
+    draw_text(mon, x, y, textl1, textl1_color, bg_color)
+    draw_text(mon, x + 1 + string.len(tostring(textl1)), y, textl2, textl2_color, bg_color)
+    draw_text_right(mon, offset, y, textr1, textr1_color, bg_color)
 end
 
 function draw_text_lmr(mon, x, y, offset, textl1, textm1, textr1, textl1_color, textm1_color, textr1_color, bg_color)
-	draw_text(mon, x, y, textl1, textl1_color, bg_color)
-	local width = mon.X
-	draw_text(mon, math.ceil((width - string.len(tostring(textm1)))/2) + 1, y, textm1, textm1_color, bg_color)
-	draw_text_right(mon, offset, y, textr1, textr1_color, bg_color)
+    draw_text(mon, x, y, textl1, textl1_color, bg_color)
+    local width = mon.X
+    draw_text(mon, math.ceil((width - string.len(tostring(textm1)))/2) + 1, y, textm1, textm1_color, bg_color)
+    draw_text_right(mon, offset, y, textr1, textr1_color, bg_color)
 end
 
 --draw line on computer terminal
@@ -119,7 +121,7 @@ function draw_line(mon, x, y, length, color, symbol, symbol_color)
     symbol = symbol or " "
     symbol_color = symbol_color or color
     if length < 0 then
-      length = 0
+        length = 0
     end
     mon.monitor.setBackgroundColor(color)
     mon.monitor.setTextColor(symbol_color)
@@ -132,10 +134,10 @@ end
 --background line of bg_color
 --main line of bar_color as a percentage of minVal/maxVal
 function progress_bar(mon, x, y, length, minVal, maxVal, bar_color, bg_color)
-  draw_line(mon, x, y, length, bg_color) --backgoround bar
-  local barSize = math.floor((minVal/maxVal) * length)
-  barSize  = math.max(0, math.min(length, barSize))
-  draw_line(mon, x, y, barSize, bar_color) --progress so far
+    draw_line(mon, x, y, length, bg_color) --backgoround bar
+    local barSize = math.floor((minVal/maxVal) * length)
+    barSize = math.max(0, math.min(length, barSize))
+    draw_line(mon, x, y, barSize, bar_color) --progress so far
 end
 
 -- layered dual progress bar
@@ -149,52 +151,52 @@ end
 --
 function progress_bar_dual(mon, x, y, length, current, target, current_color, target_color, bg_color, maxVal)
 
-  -- automatic scale
-  if maxVal == nil then
-    maxVal = math.max(current, target)
-  end
+-- automatic scale
+    if maxVal == nil then
+        maxVal = math.max(current, target)
+    end
 
-  if maxVal <= 0 then
+    if maxVal <= 0 then
+        draw_line(mon, x, y, length, bg_color)
+        return
+    end
+
+
+    -- calculate sizes
+    local currentSize = math.floor((current / maxVal) * length)
+    local targetSize = math.floor((target / maxVal) * length)
+
+
+    -- clamp
+    currentSize = math.max(0, math.min(length, currentSize))
+    targetSize = math.max(0, math.min(length, targetSize))
+
+
+    -- layer 1: background
     draw_line(mon, x, y, length, bg_color)
-    return
-  end
 
 
-  -- calculate sizes
-  local currentSize = math.floor((current / maxVal) * length)
-  local targetSize  = math.floor((target / maxVal) * length)
+    -- layer 2: longer bar
+    if currentSize > targetSize then
+        draw_line(mon, x, y, currentSize, current_color)
+    else
+        draw_line(mon, x, y, targetSize, target_color)
+    end
 
 
-  -- clamp
-  currentSize = math.max(0, math.min(length, currentSize))
-  targetSize  = math.max(0, math.min(length, targetSize))
-
-
-  -- layer 1: background
-  draw_line(mon, x, y, length, bg_color)
-
-
-  -- layer 2: longer bar
-  if currentSize > targetSize then
-    draw_line(mon, x, y, currentSize, current_color)
-  else
-    draw_line(mon, x, y, targetSize, target_color)
-  end
-
-
-  -- layer 3: shorter bar
-  if current == target then
+    -- layer 3: shorter bar
+    if current == target then
     -- target wins when equal
-    draw_line(mon, x, y, targetSize, target_color)
+        draw_line(mon, x, y, targetSize, target_color)
 
-  elseif currentSize < targetSize then
+    elseif currentSize < targetSize then
     -- current is shorter
-    draw_line(mon, x, y, currentSize, current_color)
+        draw_line(mon, x, y, currentSize, current_color)
 
-  else
+    else
     -- target is shorter
-    draw_line(mon, x, y, targetSize, target_color)
-  end
+        draw_line(mon, x, y, targetSize, target_color)
+    end
 
 end
 
@@ -219,9 +221,9 @@ function draw_layered_progress_bar(mon, x, y, width, values, bg_color)
     end
 
     if max == 0 then
-        --mon.setBackgroundColor(colors.black)
-        --mon.setCursorPos(x, y)
-        --mon.write(string.rep(" ", width))
+    --mon.setBackgroundColor(colors.black)
+    --mon.setCursorPos(x, y)
+    --mon.write(string.rep(" ", width))
         draw_line(mon, x, y, width, bg_color)
         return
     end
@@ -255,10 +257,10 @@ end
 
 
 function clear(mon)
-  term.clear()
-  term.setCursorPos(1,1)
-  mon.monitor.setBackgroundColor(colors.black)
-  mon.monitor.clear()
-  mon.monitor.setCursorPos(1,1)
+    term.clear()
+    term.setCursorPos(1,1)
+    mon.monitor.setBackgroundColor(colors.black)
+    mon.monitor.clear()
+    mon.monitor.setCursorPos(1,1)
 end
 
