@@ -12,32 +12,25 @@ end
 
 function approach(current, target, speed, minValue)
     minValue = minValue or 1
+
     local distance = target - current
-    local step = sign(distance) * (math.abs(distance)^2) * speed
+    local absDistance = math.abs(distance)
 
-	-- Prevent tiny floating point oscillations
-    if math.abs(distance) <= minValue then
+    -- Prevent tiny floating point oscillations
+    if absDistance <= minValue then
         return target
     end
 
-    return current + step
-end
+    local magnitude = math.log10(absDistance)
+    local step = sign(distance) * magnitude * speed
 
-function approachLog(current, target, speed)
-    if current <= 0 or target <= 0 then
+    if current < target then
+        return math.min(current + step, target)
+    elseif current > target then
+        return math.max(current + step, target)
+    else
         return target
     end
-
-    local ratio = target / current
-    local step = math.pow(ratio, speed)
-
-    current = current * step
-
-    if math.abs(target - current) < 1 then
-        return target
-    end
-
-    return current
 end
 
 -- peripheral identification
