@@ -153,6 +153,12 @@ function buttons()
       end
       save_config()
     end
+    
+    -- Reactor Control
+    if yPos == 2 and xPos >= 20 and xPos < 20+8 then
+      --TODO
+      print("Reactor Control pressed: " .. controlOption)
+    end
 
   end
 end
