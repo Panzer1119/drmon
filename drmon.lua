@@ -98,6 +98,7 @@ function buttons()
     event, side, xPos, yPos = os.pullEvent("monitor_touch")
 
     local right = mon.X
+    local middle = math.floor(right/2)
     local r = right - 4 + 1 + 4
 
     local delta = 0
@@ -134,13 +135,13 @@ function buttons()
     -- input gate controls
     -- 2-4 = -1000, 6-9 = -10000, 10-12,8 = -100000
     -- 17-19 = +1000, 21-23 = +10000, 25-27 = +100000
-    if yPos == 10 and autoInputGate == 0 and xPos ~= 14+18 and xPos ~= 15+18 then
+    if yPos == 10 and autoInputGate == 0 and xPos ~= middle and xPos ~= middle+1 then
       targetInputGate = targetInputGate + delta
       save_config()
     end
 
     -- input gate toggle
-    if yPos == 10 and ( xPos == 14+18 or xPos == 15+18) then
+    if yPos == 10 and ( xPos == middle or xPos == middle+1) then
       if autoInputGate == 1 then
         autoInputGate = 0
       else
@@ -275,10 +276,12 @@ function update()
 
     f.draw_text_lr(mon, 2, 9, 1, "Input Gate", f.format_int(currentInputGate) .. " rf/t", colors.white, colors.blue, colors.black)
 
+    local right = mon.X
+    local middle = math.floor(right/2)
     if autoInputGate == 1 then
-      f.draw_text(mon, 14+18, 10, "AU", colors.white, colors.gray)
+      f.draw_text(mon, middle, 10, "AU", colors.white, colors.gray)
     else
-      f.draw_text(mon, 14+18, 10, "MA", colors.white, colors.gray)
+      f.draw_text(mon, middle, 10, "MA", colors.white, colors.gray)
       drawButtons(10)
     end
 
