@@ -9,8 +9,8 @@ local lowestFieldPercent = 3
 
 local activateOnCharged = 1
 
-local inputRampRate = 5000 -- RF/t per update
-local outputRampRate = 5000
+local inputRampRate = 10000 -- RF/t per update
+local outputRampRate = 20000
 
 -- please leave things untouched from here on
 os.loadAPI("lib/f")
