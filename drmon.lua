@@ -131,7 +131,7 @@ function buttons()
     -- 2-4 = -1000, 6-9 = -10000, 10-12,8 = -100000
     -- 17-19 = +1000, 21-23 = +10000, 25-27 = +100000
     if yPos == 8 then
-      targetOutputGate = targetOutputGate + delta
+      targetOutputGate = math.max(targetOutputGate + delta, 0)
       save_config()
     end
 
@@ -141,7 +141,7 @@ function buttons()
     -- 2-4 = -1000, 6-9 = -10000, 10-12,8 = -100000
     -- 17-19 = +1000, 21-23 = +10000, 25-27 = +100000
     if yPos == 10 and autoInputGate == 0 and not isXToggleButton then
-      targetInputGate = targetInputGate + delta
+      targetInputGate = math.max(targetInputGate + delta, 0)
       save_config()
     end
 
