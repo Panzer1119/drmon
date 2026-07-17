@@ -73,6 +73,63 @@ function progress_bar(mon, x, y, length, minVal, maxVal, bar_color, bg_color)
   draw_line(mon, x, y, barSize, bar_color) --progress so far
 end
 
+--create dual marker progress bar
+--shows current value and target value on the same bar
+--
+--current_color = current value position
+--target_color  = target value position
+--bg_color      = unused area
+--
+--If current == target, target_color is used
+--
+function progress_bar_dual(mon, x, y, length, current, target, current_color, target_color, bg_color, maxVal)
+
+  -- avoid division problems
+  if maxVal == nil then
+    maxVal = math.max(current, target)
+  end
+
+  if maxVal <= 0 then
+    draw_line(mon, x, y, length, bg_color)
+    return
+  end
+
+  -- clear bar
+  draw_line(mon, x, y, length, bg_color)
+
+
+  -- calculate positions
+  local currentPos = math.floor((current / maxVal) * length)
+  local targetPos  = math.floor((target / maxVal) * length)
+
+
+  -- clamp positions
+  currentPos = math.max(0, math.min(length, currentPos))
+  targetPos  = math.max(0, math.min(length, targetPos))
+
+
+  -- draw target first
+  if targetPos > 0 then
+    draw_line(mon, x, y, targetPos, target_color)
+  end
+
+
+  -- draw current marker
+  -- current overwrites target except when equal
+  if current == target then
+    draw_line(mon, x + targetPos - 1, y, 1, target_color)
+  else
+    draw_line(mon, x + currentPos - 1, y, 1, current_color)
+  end
+
+
+  -- redraw target marker if current overwrote it and they are different
+  if current ~= target then
+    draw_line(mon, x + targetPos - 1, y, 1, target_color)
+    draw_line(mon, x + currentPos - 1, y, 1, current_color)
+  end
+end
+
 
 function clear(mon)
   term.clear()
