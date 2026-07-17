@@ -9,7 +9,7 @@ local lowestFieldPercent = 3
 
 local activateOnCharged = 1
 
-local inputRampRate = 1.5
+local inputRampRate = 2.5
 local outputRampRate = 1
 
 -- please leave things untouched from here on
@@ -83,6 +83,8 @@ local function getDynamicOutputStep(fieldPercent, fieldDelta, effectiveTarget)
         step = math.floor(step * 0.5)
     elseif fieldDelta > 0.08 then
         step = math.floor(step * 1.5)
+    elseif fieldDelta > 0.2 then
+        step = math.floor(step * 5)
     end
 
     return math.max(step, 100000)
