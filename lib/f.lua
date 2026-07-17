@@ -96,7 +96,7 @@ end
 function draw_text_lmr(mon, x, y, offset, textl1, textm1, textr1, textl1_color, textm1_color, textr1_color, bg_color)
 	draw_text(mon, x, y, textl1, textl1_color, bg_color)
 	local width = mon.X
-	draw_text(mon, math.floor((width - string.len(tostring(textm1)))/2), y, textm1, textm1_color, bg_color)
+	draw_text(mon, math.ceil((width - string.len(tostring(textm1)))/2) + 1, y, textm1, textm1_color, bg_color)
 	draw_text_right(mon, offset, y, textr1, textr1_color, bg_color)
 end
 
