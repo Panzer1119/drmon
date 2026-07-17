@@ -47,19 +47,19 @@ inputFluxgate = f.periphSearch("flow_gate")
 outputFluxgate = peripheral.wrap(outputFluxgateSide)
 reactor = peripheral.wrap(reactorSide)
 
-if monitor == null then
+if monitor == nil then
 	error("No valid monitor was found")
 end
 
-if reactor == null then
+if reactor == nil then
 	error("No valid reactor was found")
 end
 
-if inputFluxgate == null then
+if inputFluxgate == nil then
 	error("No valid input flux gate was found")
 end
 
-if outputFluxgate == null then
+if outputFluxgate == nil then
 	error("No valid output flux gate was found")
 end
 
