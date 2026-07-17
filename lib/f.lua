@@ -210,6 +210,9 @@ function draw_layered_progress_bar(mon, x, y, width, values, bg_color)
     -- Find maximum
     local max = 0
     for _, v in ipairs(values) do
+        if v.value == nil then
+            v.value = 0
+        end
         if v.value > max then
             max = v.value
         end
