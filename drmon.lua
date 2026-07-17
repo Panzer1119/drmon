@@ -107,12 +107,16 @@ function buttons()
         targetOutputGate = targetOutputGate-10000
       elseif xPos >= 10 and xPos <= 12 then
         targetOutputGate = targetOutputGate-100000
+      elseif xPos >= 14 and xPos <= 16 then
+        targetOutputGate = targetOutputGate-1000000
       elseif xPos >= 17 and xPos <= 19 then
         targetOutputGate = targetOutputGate+100000
       elseif xPos >= 21 and xPos <= 23 then
         targetOutputGate = targetOutputGate+10000
       elseif xPos >= 25 and xPos <= 27 then
         targetOutputGate = targetOutputGate+1000
+      elseif xPos >= 29 and xPos <= 31 then
+        targetOutputGate = targetOutputGate+1000000
       end
       save_config()
     end
@@ -127,12 +131,16 @@ function buttons()
         targetInputGate = targetInputGate-10000
       elseif xPos >= 10 and xPos <= 12 then
         targetInputGate = targetInputGate-100000
+      elseif xPos >= 14 and xPos <= 16 then
+        targetInputGate = targetInputGate-1000000
       elseif xPos >= 17 and xPos <= 19 then
         targetInputGate = targetInputGate+100000
       elseif xPos >= 21 and xPos <= 23 then
         targetInputGate = targetInputGate+10000
       elseif xPos >= 25 and xPos <= 27 then
         targetInputGate = targetInputGate+1000
+      elseif xPos >= 29 and xPos <= 31 then
+        targetInputGate = targetInputGate+1000000
       end
       save_config()
     end
@@ -158,10 +166,12 @@ function drawButtons(y)
   f.draw_text(mon, 2, y, " < ", colors.white, colors.gray)
   f.draw_text(mon, 6, y, " <<", colors.white, colors.gray)
   f.draw_text(mon, 10, y, "<<<", colors.white, colors.gray)
+  f.draw_text(mon, 14, y, "<<<<", colors.white, colors.gray)
 
   f.draw_text(mon, 17, y, ">>>", colors.white, colors.gray)
   f.draw_text(mon, 21, y, ">> ", colors.white, colors.gray)
   f.draw_text(mon, 25, y, " > ", colors.white, colors.gray)
+  f.draw_text(mon, 29, y, ">>>>", colors.white, colors.gray)
 end
 
 function updateFluxGates(currentInputGate, currentOutputGate)
