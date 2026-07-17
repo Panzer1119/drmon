@@ -177,9 +177,10 @@ function updateFluxGates(currentInputGate, currentOutputGate)
     if targetInputGate >= currentInputGate then
         currentInputGate = targetInputGate
     else
-        currentInputGate = math.max(
-            currentInputGate - inputRampRate,
-            targetInputGate
+        currentInputGate = f.approach(
+            currentInputGate,
+            targetInputGate,
+            inputRampRate
         )
     end
 
@@ -192,9 +193,10 @@ function updateFluxGates(currentInputGate, currentOutputGate)
     if targetOutputGate <= currentOutputGate then
         currentOutputGate = targetOutputGate
     else
-        currentOutputGate = math.min(
-            currentOutputGate + outputRampRate,
-            targetOutputGate
+        currentOutputGate = f.approach(
+            currentOutputGate,
+            targetOutputGate,
+            outputRampRate
         )
     end
 
