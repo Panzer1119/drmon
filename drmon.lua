@@ -280,7 +280,7 @@ function update()
     if targetStrength < 50 and targetStrength > 30 then targetFieldColor = colors.yellow end
 
     if autoInputGate == 1 then 
-      f.draw_text_lr(mon, 2, 14, 1, "Field Strength T:" .. targetStrength, string.format("%.2f%%", fieldPercent), colors.white, fieldColor, colors.black)
+      f.draw_text_llr(mon, 2, 14, 1, "Field Strength", "T:" .. targetStrength, string.format("%.2f%%", fieldPercent), colors.white, targetFieldColor, fieldColor, colors.black)
 	  f.progress_bar_dual(mon, 2, 15, mon.X-2, fieldPercent, targetStrength, fieldColor, targetFieldColor, colors.gray, 100)
     else
       f.draw_text_lr(mon, 2, 14, 1, "Field Strength", string.format("%.2f%%", fieldPercent), colors.white, fieldColor, colors.black)
