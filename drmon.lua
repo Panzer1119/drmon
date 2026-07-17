@@ -41,22 +41,51 @@ local emergencyCharge = false
 local emergencyTemp = false
 local emergencyStopOutputIncrease = false
 local lastFieldPercent = nil
+local outputIncreaseCooldownTicks = 0
+local outputSettleTicks = 2
 
-local function getDynamicOutputStep(fieldPercent, fieldDelta)
-    -- Fast when field has healthy headroom, conservative when near the danger zone.
-    if fieldPercent <= (lowestFieldPercent + 1) then
+local function getEffectiveTargetStrength()
+-- Keep at least a tiny margin above hard minimum, even for very low target settings.
+    return math.max(targetStrength, lowestFieldPercent + 0.15)
+end
+
+local function getDynamicFieldThresholds(effectiveTarget)
+    local span = math.max(effectiveTarget - lowestFieldPercent, 0.05)
+    local stopZone = lowestFieldPercent + math.max(0.05, span * 0.25)
+    local cautionZone = effectiveTarget - math.max(0.10, span * 0.25)
+    return stopZone, cautionZone
+end
+
+local function getDynamicOutputStep(fieldPercent, fieldDelta, effectiveTarget)
+-- Fast when field has healthy headroom, conservative when near the danger zone.
+    local headroom = fieldPercent - effectiveTarget
+
+    if fieldPercent <= lowestFieldPercent + 0.05 or fieldDelta < -0.03 then
         return 0
-    elseif fieldPercent <= targetStrength - 2 or fieldDelta < -0.10 then
-        return 100000
-    elseif fieldPercent <= targetStrength then
-        return 750000
-    elseif fieldPercent <= targetStrength + 5 then
-        return 2500000
-    elseif fieldPercent <= targetStrength + 10 then
-        return 5000000
     end
 
-    return 10000000
+    local step
+    if headroom <= 0 then
+        step = 100000
+    elseif headroom <= 0.20 then
+        step = 250000
+    elseif headroom <= 0.50 then
+        step = 1000000
+    elseif headroom <= 1.00 then
+        step = 2500000
+    elseif headroom <= 2.00 then
+        step = 5000000
+    else
+        step = 10000000
+    end
+
+    if fieldDelta < 0.01 then
+        step = math.floor(step * 0.5)
+    elseif fieldDelta > 0.08 then
+        step = math.floor(step * 1.5)
+    end
+
+    return math.max(step, 100000)
 end
 
 monitor_peripheral = f.periphSearch("monitor")
@@ -249,7 +278,7 @@ function drawFluxGateButtons(y)
     f.draw_text(mon, r-2, y,  " +1k ", colors.white, colors.gray)
 end
 
-function updateFluxGates(currentInputGate, currentOutputGate, fieldPercent, fieldDelta)
+function updateFluxGates(currentInputGate, currentOutputGate, fieldPercent, fieldDelta, effectiveTarget)
     print("Current Input  Gate: ", currentInputGate)
     print("Current Output Gate: ", currentOutputGate)
     print("Target  Input  Gate: ", targetInputGate)
@@ -278,14 +307,21 @@ function updateFluxGates(currentInputGate, currentOutputGate, fieldPercent, fiel
     if targetOutputGate <= currentOutputGate then
         currentOutputGate = targetOutputGate
     elseif not emergencyStopOutputIncrease then
-        local desiredOutputGate = f.approach(
-            currentOutputGate,
-            targetOutputGate,
-            outputRampRate
-        )
+        if outputIncreaseCooldownTicks <= 0 then
+            local desiredOutputGate = f.approach(
+                currentOutputGate,
+                targetOutputGate,
+                outputRampRate
+            )
 
-        local maxIncrease = getDynamicOutputStep(fieldPercent, fieldDelta)
-        currentOutputGate = math.min(desiredOutputGate, currentOutputGate + maxIncrease)
+            local maxIncrease = getDynamicOutputStep(fieldPercent, fieldDelta, effectiveTarget)
+            local nextOutputGate = math.min(desiredOutputGate, currentOutputGate + maxIncrease)
+
+            if nextOutputGate > currentOutputGate then
+                currentOutputGate = nextOutputGate
+                outputIncreaseCooldownTicks = outputSettleTicks
+            end
+        end
     end
 
     print("New     Input  Gate: ", currentInputGate)
@@ -418,6 +454,8 @@ function update()
         if lastFieldPercent ~= nil then
             fieldDelta = fieldPercent - lastFieldPercent
         end
+        local effectiveTargetStrength = getEffectiveTargetStrength()
+        local outputStopZone, outputCautionZone = getDynamicFieldThresholds(effectiveTargetStrength)
 
         fieldColor = colors.red
         if fieldPercent >= 50 then
@@ -500,24 +538,29 @@ function update()
         end
 
         emergencyStopOutputIncrease = false
+        outputIncreaseCooldownTicks = math.max(outputIncreaseCooldownTicks - 1, 0)
         -- are we on? regulate the input fludgate to our target field strength
         -- or set it to our saved setting since we are on manual
         if ri.status == "running" then
             if autoInputGate == 1 then
-                local baseInputGate = ri.fieldDrainRate / (1 - (targetStrength/100) )
+                local baseInputGate = ri.fieldDrainRate / (1 - (effectiveTargetStrength/100) )
                 local pendingOutputIncrease = math.max(targetOutputGate - currentOutputGate, 0)
-                local boostInputGate = math.min(pendingOutputIncrease * 0.25, ri.generationRate * 0.75)
+                local fieldDeficit = math.max(effectiveTargetStrength - fieldPercent, 0)
+                local boostInputGate = math.min(
+                    pendingOutputIncrease * 0.25 + ri.fieldDrainRate * math.min(fieldDeficit * 2, 1.5),
+                    ri.generationRate * 0.85
+                )
 
                 -- Pre-charge field when user asks for a large output jump.
                 targetInputGate = baseInputGate + boostInputGate
 
-                emergencyStopOutputIncrease = fieldPercent <= (lowestFieldPercent + 1)
-                    or (fieldPercent < (targetStrength - 1) and fieldDelta < 0)
+                emergencyStopOutputIncrease = fieldPercent <= outputStopZone
+                or (fieldPercent < outputCautionZone and fieldDelta < -0.005)
             end
         end
 
         -- Update the flux gates
-        updateFluxGates(currentInputGate, currentOutputGate, fieldPercent, fieldDelta)
+        updateFluxGates(currentInputGate, currentOutputGate, fieldPercent, fieldDelta, effectiveTargetStrength)
         lastFieldPercent = fieldPercent
 
         -- safeguards
