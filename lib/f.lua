@@ -76,6 +76,7 @@ end
 function progress_bar(mon, x, y, length, minVal, maxVal, bar_color, bg_color)
   draw_line(mon, x, y, length, bg_color) --backgoround bar
   local barSize = math.floor((minVal/maxVal) * length)
+  barSize  = math.max(0, math.min(length, barSize))
   draw_line(mon, x, y, barSize, bar_color) --progress so far
 end
 
