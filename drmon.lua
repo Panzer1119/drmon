@@ -101,25 +101,25 @@ function buttons()
     local r = right - 4 + 1
 
     local delta = 0
-    if xPos >= 2 and xPos <= 5 then
+    if xPos >= 2 and xPos <= 6 then
       delta = -1000
-    elseif xPos >= 7 and xPos <= 10 then
+    elseif xPos >= 8 and xPos <= 12 then
       delta = -10000
-    elseif xPos >= 12 and xPos <= 16 then
+    elseif xPos >= 14 and xPos <= 18 then
       delta = -100000
-    elseif xPos >= 18 and xPos <= 22 then
+    elseif xPos >= 20 and xPos <= 24 then
       delta = -1000000
-    elseif xPos >= 24 and xPos <= 28 then
+    elseif xPos >= 26 and xPos <= 30 then
       delta = -10000000
-    elseif xPos >= r-28 and xPos <= r-24 then
+    elseif xPos >= r-30 and xPos <= r-26 then
       delta = 10000000
-    elseif xPos >= r-22 and xPos <= r-18 then
+    elseif xPos >= r-24 and xPos <= r-20 then
       delta = 1000000
-    elseif xPos >= r-16 and xPos <= r-12 then
+    elseif xPos >= r-18 and xPos <= r-14 then
       delta = 100000
-    elseif xPos >= r-10 and xPos <= r-7 then
+    elseif xPos >= r-12 and xPos <= r-8 then
       delta = 10000
-    elseif xPos >= r-5 and xPos <= r-2 then
+    elseif xPos >= r-6 and xPos <= r-2 then
       delta = 1000
     end
 
@@ -134,13 +134,13 @@ function buttons()
     -- input gate controls
     -- 2-4 = -1000, 6-9 = -10000, 10-12,8 = -100000
     -- 17-19 = +1000, 21-23 = +10000, 25-27 = +100000
-    if yPos == 10 and autoInputGate == 0 and xPos ~= 14+13 and xPos ~= 15+13 then
+    if yPos == 10 and autoInputGate == 0 and xPos ~= 14+18 and xPos ~= 15+18 then
       targetInputGate = targetInputGate + delta
       save_config()
     end
 
     -- input gate toggle
-    if yPos == 10 and ( xPos == 14+13 or xPos == 15+13) then
+    if yPos == 10 and ( xPos == 14+18 or xPos == 15+18) then
       if autoInputGate == 1 then
         autoInputGate = 0
       else
@@ -162,16 +162,16 @@ function drawButtons(y)
 
   -- left buttons
   f.draw_text(mon, 2, y,  " -1k ", colors.white, colors.gray)
-  f.draw_text(mon, 7, y,  " -10k", colors.white, colors.gray)
-  f.draw_text(mon, 12, y, "-100k", colors.white, colors.gray)
-  f.draw_text(mon, 17, y, " -1M ", colors.white, colors.gray)
-  f.draw_text(mon, 22, y, " -10M", colors.white, colors.gray)
+  f.draw_text(mon, 8, y,  " -10k", colors.white, colors.gray)
+  f.draw_text(mon, 14, y, "-100k", colors.white, colors.gray)
+  f.draw_text(mon, 20, y, " -1M ", colors.white, colors.gray)
+  f.draw_text(mon, 26, y, " -10M", colors.white, colors.gray)
 
   -- right buttons (anchored from right)
-  f.draw_text(mon, r-22, y, " +10M", colors.white, colors.gray)
-  f.draw_text(mon, r-17, y, " +1M ", colors.white, colors.gray)
-  f.draw_text(mon, r-12, y, "+100k", colors.white, colors.gray)
-  f.draw_text(mon, r-7, y,  " +10k", colors.white, colors.gray)
+  f.draw_text(mon, r-26, y, " +10M", colors.white, colors.gray)
+  f.draw_text(mon, r-20, y, " +1M ", colors.white, colors.gray)
+  f.draw_text(mon, r-14, y, "+100k", colors.white, colors.gray)
+  f.draw_text(mon, r-8, y,  " +10k", colors.white, colors.gray)
   f.draw_text(mon, r-2, y,  " +1k ", colors.white, colors.gray)
 end
 
@@ -276,9 +276,9 @@ function update()
     f.draw_text_lr(mon, 2, 9, 1, "Input Gate", f.format_int(currentInputGate) .. " rf/t", colors.white, colors.blue, colors.black)
 
     if autoInputGate == 1 then
-      f.draw_text(mon, 14+13, 10, "AU", colors.white, colors.gray)
+      f.draw_text(mon, 14+18, 10, "AU", colors.white, colors.gray)
     else
-      f.draw_text(mon, 14+13, 10, "MA", colors.white, colors.gray)
+      f.draw_text(mon, 14+18, 10, "MA", colors.white, colors.gray)
       drawButtons(10)
     end
 
