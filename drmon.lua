@@ -156,8 +156,19 @@ function buttons()
     
     -- Reactor Control
     if yPos == 2 and xPos >= 20 and xPos < 20+8 then
-      --TODO
-      print("Reactor Control pressed: " .. controlOption)
+      if controlOption == "charge" then
+        reactor.chargeReactor()
+      elseif controlOption == "activate" then
+        reactor.activateReactor()
+      elseif controlOption == "stop" or controlOption == "shutdown" then
+        reactor.stopReactor()
+      end
+    end
+
+    -- Fail Safe Toggle
+    if yPos == 2 and xPos >= 30 and xPos < 36 and false then
+      --TODO Needs to be placed somewhere
+      reactor.toggleFailSafe()
     end
 
   end
