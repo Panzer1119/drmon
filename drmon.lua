@@ -271,12 +271,12 @@ function update()
     if ri.temperature >= 5000 and ri.temperature <= 6500 then tempColor = colors.orange end
     f.draw_text_lr(mon, 2, 6, 1, "Temperature", f.format_int(ri.temperature, 2) .. " C", colors.white, tempColor, colors.black)
 
-    f.draw_text_lr(mon, 2, 7, 1, "Output Gate", f.format_int(currentOutputGate) .. " rf/t", colors.white, colors.blue, colors.black)
+    f.draw_text_lmr(mon, 2, 7, 1, "Output Gate", f.format_int(currentOutputGate) .. " rf/t", f.format_int(targetOutputGate) .. " rf/t", colors.white, colors.cyan, colors.blue, colors.black)
 
     -- buttons
     drawButtons(8)
 
-    f.draw_text_lr(mon, 2, 9, 1, "Input Gate", f.format_int(currentInputGate) .. " rf/t", colors.white, colors.blue, colors.black)
+    f.draw_text_lmr(mon, 2, 9, 1, "Input Gate", f.format_int(currentInputGate) .. " rf/t", f.format_int(targetInputGate) .. " rf/t", colors.white, colors.cyan, colors.blue, colors.black)
 
     local right = mon.X
     local middle = math.floor(right/2)
