@@ -167,14 +167,12 @@ function drawControlButtons()
       drawFluxGateButtons(10)
     end
     -- Reactor Control
-    local controlText = string.upper(controlOption)
-    local controlTextLength = string.len(controlText)
-    local controlTextOffset = math.floor((8 - controlTextLength) / 2)
+    local controlText = f.centerPad(string.upper(controlOption), 8)
     local controlBackgroundColor = colors.gray
     if controlColor == colors.gray then
       controlBackgroundColor = colors.lightGray
     end
-    f.draw_text(mon, 18 + controlTextOffset, 2, controlText, controlColor, controlBackgroundColor)
+    f.draw_text(mon, 20, 2, controlText, controlColor, controlBackgroundColor)
 end
 
 function drawFluxGateButtons(y)
@@ -276,7 +274,7 @@ function update()
     elseif ri.status == "warming_up" then
       if ri.temperature <= 2000 then
         statusColor = colors.orange
-        controlOption = "stop"
+        controlOption = "shutdown"
         controlColor = colors.orange
       else
         statusColor = colors.green
@@ -285,7 +283,7 @@ function update()
       end
     elseif ri.status == "running" then
       statusColor = colors.green
-      controlOption = "stop"
+      controlOption = "shutdown"
       controlColor = colors.red
     elseif ri.status == "stopping" then
       statusColor = colors.orange
