@@ -73,18 +73,18 @@ function progress_bar(mon, x, y, length, minVal, maxVal, bar_color, bg_color)
   draw_line(mon, x, y, barSize, bar_color) --progress so far
 end
 
---create dual marker progress bar
---shows current value and target value on the same bar
+-- layered dual progress bar
 --
---current_color = current value position
---target_color  = target value position
---bg_color      = unused area
+-- background -> longer value -> shorter value
 --
---If current == target, target_color is used
+-- current and target are drawn as overlapping bars
+-- the longer value determines the base color
+-- the shorter value overlays it
+-- equal values use current color
 --
 function progress_bar_dual(mon, x, y, length, current, target, current_color, target_color, bg_color, maxVal)
 
-  -- avoid division problems
+  -- automatic scale
   if maxVal == nil then
     maxVal = math.max(current, target)
   end
@@ -94,40 +94,43 @@ function progress_bar_dual(mon, x, y, length, current, target, current_color, ta
     return
   end
 
-  -- clear bar
+
+  -- calculate sizes
+  local currentSize = math.floor((current / maxVal) * length)
+  local targetSize  = math.floor((target / maxVal) * length)
+
+
+  -- clamp
+  currentSize = math.max(0, math.min(length, currentSize))
+  targetSize  = math.max(0, math.min(length, targetSize))
+
+
+  -- layer 1: background
   draw_line(mon, x, y, length, bg_color)
 
 
-  -- calculate positions
-  local currentPos = math.floor((current / maxVal) * length)
-  local targetPos  = math.floor((target / maxVal) * length)
-
-
-  -- clamp positions
-  currentPos = math.max(0, math.min(length, currentPos))
-  targetPos  = math.max(0, math.min(length, targetPos))
-
-
-  -- draw target first
-  if targetPos > 0 then
-    draw_line(mon, x, y, targetPos, target_color)
-  end
-
-
-  -- draw current marker
-  -- current overwrites target except when equal
-  if current == target then
-    draw_line(mon, x + targetPos - 1, y, 1, target_color)
+  -- layer 2: longer bar
+  if currentSize > targetSize then
+    draw_line(mon, x, y, currentSize, current_color)
   else
-    draw_line(mon, x + currentPos - 1, y, 1, current_color)
+    draw_line(mon, x, y, targetSize, target_color)
   end
 
 
-  -- redraw target marker if current overwrote it and they are different
-  if current ~= target then
-    draw_line(mon, x + targetPos - 1, y, 1, target_color)
-    draw_line(mon, x + currentPos - 1, y, 1, current_color)
+  -- layer 3: shorter bar
+  if current == target then
+    -- current wins when equal
+    draw_line(mon, x, y, currentSize, current_color)
+
+  elseif currentSize < targetSize then
+    -- current is shorter
+    draw_line(mon, x, y, currentSize, current_color)
+
+  else
+    -- target is shorter
+    draw_line(mon, x, y, targetSize, target_color)
   end
+
 end
 
 
