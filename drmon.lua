@@ -397,7 +397,13 @@ function update()
       }, colors.gray)
     else
       f.draw_text_lr(mon, 2, 14, 1, "Field Strength Lowest: " .. lowestFieldPercent, "Current: " .. string.format("%.2f %%", fieldPercent), colors.white, fieldColor, colors.black)
-	  f.progress_bar(mon, 2, 15, mon.X-2, fieldPercent, 100, fieldColor, colors.gray)
+	  --f.progress_bar(mon, 2, 15, mon.X-2, fieldPercent, 100, fieldColor, colors.gray)
+      f.draw_layered_progress_bar(mon, 2, 15, mon.X-2, {
+        { value = lowestFieldPercent, color = colors.red, symbol = "X", symbol_color = colors.black },
+        { value = fieldPercent, color = fieldColor },
+        --{ value = targetStrength, color = targetFieldColor },
+        { value = 100, color = colors.gray },
+      }, colors.gray)
     end
 
     local fuelPercent, fuelColor
