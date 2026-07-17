@@ -65,6 +65,20 @@ function format_int(number, decimals)
   return minus .. int .. fraction
 end
 
+function centerPad(str, length)
+    str = tostring(str)
+
+    local padding = length - string.len(str)
+    if padding <= 0 then
+        return str
+    end
+
+    local left = math.floor(padding / 2)
+    local right = math.ceil(padding / 2)
+
+    return string.rep(" ", left) .. str .. string.rep(" ", right)
+end
+
 -- monitor related
 
 --display text text on monitor, "mon" peripheral
