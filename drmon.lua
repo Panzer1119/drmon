@@ -245,10 +245,11 @@ function update()
     f.draw_text_lr(mon, 2, 2, 1, "Draconic Reactor", string.upper(ri.status), colors.white, statusColor, colors.black)
 
     f.draw_text_lr(mon, 2, 4, 1, "Generation", f.format_int(ri.generationRate) .. " rf/t", colors.white, colors.lime, colors.black)
+    local maxGenerationValue = math.max(ri.generationRate, currentOutputGate, targetOutputGate)
     if ri.generationRate <= currentOutputGate then
-      f.progress_bar_dual(mon, 2, 5, mon.X-2, ri.generationRate, currentOutputGate, colors.lime, colors.blue, colors.gray, targetOutputGate)
+      f.progress_bar_dual(mon, 2, 5, mon.X-2, ri.generationRate, currentOutputGate, colors.lime, colors.blue, colors.gray, maxGenerationValue)
     else
-      f.progress_bar_dual(mon, 2, 5, mon.X-2, currentOutputGate, ri.generationRate, colors.blue, colors.lime, colors.gray, targetOutputGate)
+      f.progress_bar_dual(mon, 2, 5, mon.X-2, currentOutputGate, ri.generationRate, colors.blue, colors.lime, colors.gray, maxGenerationValue)
     end
 
     local tempColor = colors.red
