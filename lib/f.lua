@@ -13,6 +13,23 @@ function approach(current, target, speed, minValue)
     return current + step
 end
 
+function approachLog(current, target, speed)
+    if current <= 0 or target <= 0 then
+        return target
+    end
+
+    local ratio = target / current
+    local step = math.pow(ratio, speed)
+
+    current = current * step
+
+    if math.abs(target - current) < 1 then
+        return target
+    end
+
+    return current
+end
+
 -- peripheral identification
 --
 function periphSearch(type)
