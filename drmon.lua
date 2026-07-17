@@ -9,8 +9,8 @@ local lowestFieldPercent = 3
 
 local activateOnCharged = 1
 
-local inputRampRate = 0.25
-local outputRampRate = 0.5
+local inputRampRate = 0.1
+local outputRampRate = 0.2
 
 -- please leave things untouched from here on
 os.loadAPI("lib/f")
@@ -177,7 +177,7 @@ function updateFluxGates(currentInputGate, currentOutputGate)
     if targetInputGate >= currentInputGate then
         currentInputGate = targetInputGate
     else
-        currentInputGate = f.approach(
+        currentInputGate = f.approachLog(
             currentInputGate,
             targetInputGate,
             inputRampRate
@@ -193,7 +193,7 @@ function updateFluxGates(currentInputGate, currentOutputGate)
     if targetOutputGate <= currentOutputGate then
         currentOutputGate = targetOutputGate
     else
-        currentOutputGate = f.approach(
+        currentOutputGate = f.approachLog(
             currentOutputGate,
             targetOutputGate,
             outputRampRate
