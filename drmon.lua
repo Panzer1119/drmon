@@ -285,6 +285,8 @@ function update()
     currentInputGate = inputFluxgate.getSignalLowFlow()
     currentOutputGate = outputFluxgate.getSignalLowFlow()
 
+    local netPositive = ri.generationRate - currentInputGate
+
     -- print out all the infos from .getReactorInfo() to term
 
     if ri == nil then
@@ -303,6 +305,7 @@ function update()
       statusColor = colors.gray
       controlOption = "charge"
       controlColor = colors.blue
+      netPositive = nil
     elseif ri.status == "warming_up" then
       if ri.temperature <= 2000 then
         statusColor = colors.orange
@@ -321,14 +324,17 @@ function update()
       statusColor = colors.orange
       controlOption = "activate"
       controlColor = colors.green
+      netPositive = math.max(netPositive, 0)
     elseif ri.status == "cooling" then
       statusColor = colors.blue
       controlOption = "charge"
       controlColor = colors.blue
+      netPositive = math.max(netPositive, 0)
     else
       statusColor = colors.red
       controlOption = "unknown"
       controlColor = colors.gray
+      netPositive = nil
     end
 
     f.draw_text_lr(mon, 2, 2, 1, "Draconic Reactor", string.upper(ri.status), colors.white, statusColor, colors.black)
@@ -338,15 +344,13 @@ function update()
 	    failSafeColor = colors.green
 	end
 
-    f.draw_text_lr(mon, 2, 4, 1, "Generation", f.format_int(ri.generationRate) .. " rf/t", colors.white, colors.lime, colors.black)
-    local maxGenerationValue = math.max(ri.generationRate, currentOutputGate, targetOutputGate)
-    if maxGenerationValue == targetOutputGate then
-      f.progress_bar_dual(mon, 2, 5, mon.X-2, ri.generationRate, currentOutputGate, colors.lime, colors.cyan, colors.blue, targetOutputGate)
-    elseif maxGenerationValue == ri.generationRate then
-      f.progress_bar_dual(mon, 2, 5, mon.X-2, currentOutputGate, targetOutputGate, colors.cyan, colors.blue, colors.lime, ri.generationRate)
-    elseif maxGenerationValue == currentOutputGate then
-      f.progress_bar_dual(mon, 2, 5, mon.X-2, ri.generationRate, targetOutputGate, colors.lime, colors.blue, colors.cyan, currentOutputGate)
-    end
+    f.draw_text_lmr(mon, 2, 4, 1, "Generation", f.format_int(netPositive) .. " rf/t", f.format_int(ri.generationRate) .. " rf/t", colors.white, colors.green, colors.lime, colors.black)
+    f.draw_layered_progress_bar(mon, 2, 5, mon.X-2, {
+        { value = netPositive, color = colors.green },
+        { value = ri.generationRate, color = colors.lime },
+        { value = currentOutputGate, color = colors.cyan },
+        { value = targetOutputGate, color = colors.blue },
+    }, colors.gray)
 
     local tempColor = colors.red
     if ri.temperature <= 5000 then tempColor = colors.green end
