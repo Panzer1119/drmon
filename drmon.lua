@@ -283,12 +283,12 @@ function update()
         ri = reactor.getReactorInfo()
 
         -- Read actual gate values
-        currentInputGate = inputFluxgate.getSignalLowFlow()
-        currentOutputGate = outputFluxgate.getSignalLowFlow()
+        local currentInputGate = inputFluxgate.getSignalLowFlow()
+        local currentOutputGate = outputFluxgate.getSignalLowFlow()
 
-        if ri == nil then
+        if ri == nil or currentInputGate == nil or currentOutputGate == nil then
         -- WTF why should this happen?
-            print("No reactor info")
+            print("No reactor or flux gate info")
             os.reboot()
             return
         end
