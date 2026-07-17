@@ -1,11 +1,12 @@
 -- math
 
-function approach(current, target, speed)
+function approach(current, target, speed, minValue)
+    minValue = minValue or 1
     local distance = target - current
-    local step = distance / speed
+    local step = math.sign(distance) * (math.abs(distance)^2) * speed
 
-    -- Prevent tiny floating point oscillations
-    if math.abs(distance) < 0.001 then
+	-- Prevent tiny floating point oscillations
+    if math.abs(distance) <= minValue then
         return target
     end
 
