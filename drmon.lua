@@ -289,6 +289,8 @@ function update()
     if ri == nil then
         -- WTF why should this happen?
         print("No reactor info")
+        os.reboot()
+        return
     end
 
     local netPositive = ri.generationRate - currentInputGate
