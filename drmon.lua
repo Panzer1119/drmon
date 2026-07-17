@@ -189,8 +189,8 @@ function drawControlButtons()
     if autoInputGate == 1 then
       f.draw_text(mon, middle-1, 10, "AUTO", colors.white, colors.gray)
     else
-      f.draw_text(mon, middle-1, 10, "MANU", colors.white, colors.gray)
       drawFluxGateButtons(10)
+      f.draw_text(mon, middle-1, 10, "MANU", colors.white, colors.gray)
     end
     -- Reactor Control
     local controlText = f.centerPad(string.upper(controlOption), 8)
