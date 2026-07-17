@@ -279,7 +279,7 @@ function update()
     if autoInputGate == 1 then 
       f.draw_text_lr(mon, 2, 14, 1, "Field Strength T:" .. targetStrength, string.format("%.2f%%", fieldPercent), colors.white, fieldColor, colors.black)
     else
-      f.draw_text_lr(mon, 2, 14, 1, "Field Strength", fieldPercent .. "%", colors.white, fieldColor, colors.black)
+      f.draw_text_lr(mon, 2, 14, 1, "Field Strength", string.format("%.2f%%", fieldPercent), colors.white, fieldColor, colors.black)
     end
     f.progress_bar(mon, 2, 15, mon.X-2, fieldPercent, 100, fieldColor, colors.gray)
 
