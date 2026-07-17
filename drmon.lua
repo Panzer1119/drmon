@@ -20,6 +20,8 @@ local version = "0.3"
 local autoInputGate = 1
 local targetInputGate = 250000
 local targetOutputGate = 0
+local controlOption = "unknown"
+local controlColor = colors.gray
 
 -- monitor 
 local mon, monitor, monX, monY
@@ -257,17 +259,48 @@ function update()
     -- monitor output
 
     local statusColor
-    statusColor = colors.red
 
-    if ri.status == "running" or ri.status == "warming_up" and ri.temperature > 2000 then
-      statusColor = colors.green
-    elseif ri.status == "cold" then
+    if ri.status == "cold" then
       statusColor = colors.gray
+      controlOption = "charge"
+      controlColor = colors.blue
     elseif ri.status == "warming_up" then
+      if ri.temperature <= 2000 then
+        statusColor = colors.orange
+        controlOption = "stop"
+        controlColor = colors.orange
+      else
+        statusColor = colors.green
+        controlOption = "activate"
+        controlColor = colors.green
+      end
+    elseif ri.status == "running" then
+      statusColor = colors.green
+      controlOption = "stop"
+      controlColor = colors.red
+    elseif ri.status == "stopping" then
       statusColor = colors.orange
+      controlOption = "activate"
+      controlColor = colors.green
+    elseif ri.status == "cooling" then
+      statusColor = colors.blue
+      controlOption = "charge"
+      controlColor = colors.blue
+    else
+      statusColor = colors.red
+      controlOption = "unknown"
+      controlColor = colors.gray
     end
 
     f.draw_text_lr(mon, 2, 2, 1, "Draconic Reactor", string.upper(ri.status), colors.white, statusColor, colors.black)
+	--TODO Show control button
+
+	local failSafeColor
+	failSafeColor = colors.red
+	if ri.failSafe then
+	    failSafeColor = colors.green
+	end
+	--TODO Show failSafe status and add toggle for it
 
     f.draw_text_lr(mon, 2, 4, 1, "Generation", f.format_int(ri.generationRate) .. " rf/t", colors.white, colors.lime, colors.black)
     local maxGenerationValue = math.max(ri.generationRate, currentOutputGate, targetOutputGate)
