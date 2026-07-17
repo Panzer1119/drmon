@@ -80,7 +80,7 @@ end
 -- current and target are drawn as overlapping bars
 -- the longer value determines the base color
 -- the shorter value overlays it
--- equal values use current color
+-- equal values use target color
 --
 function progress_bar_dual(mon, x, y, length, current, target, current_color, target_color, bg_color, maxVal)
 
@@ -119,8 +119,8 @@ function progress_bar_dual(mon, x, y, length, current, target, current_color, ta
 
   -- layer 3: shorter bar
   if current == target then
-    -- current wins when equal
-    draw_line(mon, x, y, currentSize, current_color)
+    -- target wins when equal
+    draw_line(mon, x, y, targetSize, target_color)
 
   elseif currentSize < targetSize then
     -- current is shorter
