@@ -1,3 +1,16 @@
+-- math
+
+local function approach(current, target, speed)
+    local distance = target - current
+    local step = distance * speed
+
+    -- Prevent tiny floating point oscillations
+    if math.abs(distance) < 0.001 then
+        return target
+    end
+
+    return current + step
+end
 
 -- peripheral identification
 --
