@@ -351,7 +351,7 @@ function update()
     if targetStrength >= 50 then targetFieldColor = colors.lime end
     if targetStrength < 50 and targetStrength > 30 then targetFieldColor = colors.yellow end
 
-    local lowestFieldCount = math.floor(lowestFieldPercent * (width-2) / 100)
+    local lowestFieldCount = math.floor(lowestFieldPercent * (mon.X-2) / 100)
     --TODO Draw that many X at the start of the progress bar to mark the death range?
     if autoInputGate == 1 then 
       f.draw_text_llr(mon, 2, 14, 1, "Field Strength Lowest: " .. lowestFieldPercent, "Target: " .. targetStrength, string.format("%.2f %%", fieldPercent), colors.white, targetFieldColor, fieldColor, colors.black)
