@@ -22,6 +22,7 @@ local targetInputGate = 250000
 local targetOutputGate = 0
 local controlOption = "unknown"
 local controlColor = colors.gray
+local failSafeColor = colors.gray
 
 -- monitor 
 local mon, monitor, monX, monY
@@ -166,8 +167,7 @@ function buttons()
     end
 
     -- Fail Safe Toggle
-    if yPos == 2 and xPos >= 30 and xPos < 36 and false then
-      --TODO Needs to be placed somewhere
+    if yPos == 2 and xPos >= 30 and xPos < 39 then
       reactor.toggleFailSafe()
     end
 
@@ -190,6 +190,8 @@ function drawControlButtons()
       controlBackgroundColor = colors.lightGray
     end
     f.draw_text(mon, 20, 2, controlText, controlColor, controlBackgroundColor)
+    -- Fail Safe Toggle
+    f.draw_text(mon, 30, 2, "FAIL SAFE", failSafeColor, colors.gray)
 end
 
 function drawFluxGateButtons(y)
@@ -317,14 +319,11 @@ function update()
     end
 
     f.draw_text_lr(mon, 2, 2, 1, "Draconic Reactor", string.upper(ri.status), colors.white, statusColor, colors.black)
-	--TODO Handle control button
 
-	local failSafeColor
 	failSafeColor = colors.red
 	if ri.failSafe then
 	    failSafeColor = colors.green
 	end
-	--TODO Show failSafe status and add toggle for it
 
     f.draw_text_lr(mon, 2, 4, 1, "Generation", f.format_int(ri.generationRate) .. " rf/t", colors.white, colors.lime, colors.black)
     local maxGenerationValue = math.max(ri.generationRate, currentOutputGate, targetOutputGate)
