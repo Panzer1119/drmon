@@ -22,7 +22,7 @@ function approach(current, target, speed, minValue)
     end
 
     local magnitude = math.log10(absDistance)
-    local step = sign(distance) * magnitude * speed
+    local step = sign(distance) * math.min(math.pow(10, math.floor(magnitude)) * speed, absDistance)
 
     if current < target then
         return math.min(current + step, target)
