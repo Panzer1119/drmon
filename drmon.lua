@@ -166,6 +166,15 @@ function drawControlButtons()
       f.draw_text(mon, middle-1, 10, "MANU", colors.white, colors.gray)
       drawFluxGateButtons(10)
     end
+    -- Reactor Control
+    local controlText = string.upper(controlOption)
+    local controlTextLength = string.len(controlText)
+    local controlTextOffset = math.floor((8 - controlTextLength) / 2)
+    local controlBackgroundColor = colors.gray
+    if controlColor == colors.gray then
+      controlBackgroundColor = colors.lightGray
+    end
+    f.draw_text(mon, 18 + controlTextOffset, 2, controlText, controlColor, controlBackgroundColor)
 end
 
 function drawFluxGateButtons(y)
@@ -293,7 +302,7 @@ function update()
     end
 
     f.draw_text_lr(mon, 2, 2, 1, "Draconic Reactor", string.upper(ri.status), colors.white, statusColor, colors.black)
-	--TODO Show control button
+	--TODO Handle control button
 
 	local failSafeColor
 	failSafeColor = colors.red
