@@ -381,12 +381,20 @@ function update()
     targetFieldColor = colors.magenta
     if targetStrength >= 50 then targetFieldColor = colors.lime end
     if targetStrength < 50 and targetStrength > 30 then targetFieldColor = colors.yellow end
+    fieldColor = colors.cyan
+    targetFieldColor = colors.blue
 
     local lowestFieldCount = math.floor(lowestFieldPercent * (mon.X-2) / 100)
     --TODO Draw that many X at the start of the progress bar to mark the death range?
     if autoInputGate == 1 then 
       f.draw_text_llr(mon, 2, 14, 1, "Field Strength Lowest: " .. lowestFieldPercent, "Target: " .. targetStrength, string.format("%.2f %%", fieldPercent), colors.white, targetFieldColor, fieldColor, colors.black)
-	  f.progress_bar_dual(mon, 2, 15, mon.X-2, fieldPercent, targetStrength, fieldColor, targetFieldColor, colors.gray, 100)
+	  --f.progress_bar_dual(mon, 2, 15, mon.X-2, fieldPercent, targetStrength, fieldColor, targetFieldColor, colors.gray, 100)
+      f.draw_layered_progress_bar(mon, 2, 15, mon.X-2, {
+        { value = lowestFieldPercent, color = colors.red, symbol = "X", symbol_color = colors.black },
+        { value = fieldPercent, color = fieldColor },
+        { value = targetStrength, color = targetFieldColor },
+        { value = 100, color = colors.gray },
+      }, colors.gray)
     else
       f.draw_text_lr(mon, 2, 14, 1, "Field Strength Lowest: " .. lowestFieldPercent, string.format("%.2f %%", fieldPercent), colors.white, fieldColor, colors.black)
 	  f.progress_bar(mon, 2, 15, mon.X-2, fieldPercent, 100, fieldColor, colors.gray)

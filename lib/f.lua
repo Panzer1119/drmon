@@ -229,6 +229,8 @@ function draw_layered_progress_bar(mon, x, y, width, values, bg_color)
         bars[i] = {
             value = v.value,
             color = v.color,
+            symbol = v.symbol,
+            symbol_color = v.symbol_color,
         }
     end
 
@@ -244,7 +246,7 @@ function draw_layered_progress_bar(mon, x, y, width, values, bg_color)
         --mon.setBackgroundColor(bar.color)
         --mon.setCursorPos(x, y)
         --mon.write(string.rep(" ", w))
-        draw_line(mon, x, y, w, bar.color)
+        draw_line(mon, x, y, w, bar.color, bar.symbol, bar.symbol_color)
     end
 end
 
