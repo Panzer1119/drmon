@@ -40,6 +40,24 @@ local action = "None since reboot"
 local emergencyCharge = false
 local emergencyTemp = false
 local emergencyStopOutputIncrease = false
+local lastFieldPercent = nil
+
+local function getDynamicOutputStep(fieldPercent, fieldDelta)
+    -- Fast when field has healthy headroom, conservative when near the danger zone.
+    if fieldPercent <= (lowestFieldPercent + 1) then
+        return 0
+    elseif fieldPercent <= targetStrength - 2 or fieldDelta < -0.10 then
+        return 100000
+    elseif fieldPercent <= targetStrength then
+        return 750000
+    elseif fieldPercent <= targetStrength + 5 then
+        return 2500000
+    elseif fieldPercent <= targetStrength + 10 then
+        return 5000000
+    end
+
+    return 10000000
+end
 
 monitor_peripheral = f.periphSearch("monitor")
 monitor = window.create(monitor_peripheral, 1, 1, monitor_peripheral.getSize()) -- create a window on the monitor
@@ -231,7 +249,7 @@ function drawFluxGateButtons(y)
     f.draw_text(mon, r-2, y,  " +1k ", colors.white, colors.gray)
 end
 
-function updateFluxGates(currentInputGate, currentOutputGate)
+function updateFluxGates(currentInputGate, currentOutputGate, fieldPercent, fieldDelta)
     print("Current Input  Gate: ", currentInputGate)
     print("Current Output Gate: ", currentOutputGate)
     print("Target  Input  Gate: ", targetInputGate)
@@ -260,11 +278,14 @@ function updateFluxGates(currentInputGate, currentOutputGate)
     if targetOutputGate <= currentOutputGate then
         currentOutputGate = targetOutputGate
     elseif not emergencyStopOutputIncrease then
-        currentOutputGate = f.approach(
+        local desiredOutputGate = f.approach(
             currentOutputGate,
             targetOutputGate,
             outputRampRate
         )
+
+        local maxIncrease = getDynamicOutputStep(fieldPercent, fieldDelta)
+        currentOutputGate = math.min(desiredOutputGate, currentOutputGate + maxIncrease)
     end
 
     print("New     Input  Gate: ", currentInputGate)
@@ -393,6 +414,10 @@ function update()
 
         local fieldPercent, fieldColor
         fieldPercent = math.ceil(ri.fieldStrength / ri.maxFieldStrength * 10000)*.01
+        local fieldDelta = 0
+        if lastFieldPercent ~= nil then
+            fieldDelta = fieldPercent - lastFieldPercent
+        end
 
         fieldColor = colors.red
         if fieldPercent >= 50 then
@@ -479,15 +504,21 @@ function update()
         -- or set it to our saved setting since we are on manual
         if ri.status == "running" then
             if autoInputGate == 1 then
-                targetInputGate = ri.fieldDrainRate / (1 - (targetStrength/100) )
-                --emergencyStopOutputIncrease = fieldPercent < (targetStrength - 0.1) or fieldPercent < lowestFieldPercent
-                --emergencyStopOutputIncrease = fieldPercent < (lowestFieldPercent + 0.1)
-                emergencyStopOutputIncrease = fieldPercent < 2 * lowestFieldPercent
+                local baseInputGate = ri.fieldDrainRate / (1 - (targetStrength/100) )
+                local pendingOutputIncrease = math.max(targetOutputGate - currentOutputGate, 0)
+                local boostInputGate = math.min(pendingOutputIncrease * 0.25, ri.generationRate * 0.75)
+
+                -- Pre-charge field when user asks for a large output jump.
+                targetInputGate = baseInputGate + boostInputGate
+
+                emergencyStopOutputIncrease = fieldPercent <= (lowestFieldPercent + 1)
+                    or (fieldPercent < (targetStrength - 1) and fieldDelta < 0)
             end
         end
 
         -- Update the flux gates
-        updateFluxGates(currentInputGate, currentOutputGate)
+        updateFluxGates(currentInputGate, currentOutputGate, fieldPercent, fieldDelta)
+        lastFieldPercent = fieldPercent
 
         -- safeguards
         --
