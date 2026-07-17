@@ -155,7 +155,7 @@ function buttons()
   end
 end
 
-function drawButtons(y)
+function drawFluxGateButtons(y)
   -- Button layout:
   -- left side:  -1k -10k -100k -1M -10M
   -- right side: +10M +1M +100k +10k +1k
@@ -276,7 +276,7 @@ function update()
     f.draw_text_lmr(mon, 2, 7, 1, "Output Gate", f.format_int(currentOutputGate) .. " rf/t", f.format_int(targetOutputGate) .. " rf/t", colors.white, colors.cyan, colors.blue, colors.black)
 
     -- buttons
-    drawButtons(8)
+    drawFluxGateButtons(8)
 
     f.draw_text_lmr(mon, 2, 9, 1, "Input Gate", f.format_int(currentInputGate) .. " rf/t", f.format_int(targetInputGate) .. " rf/t", colors.white, colors.cyan, colors.blue, colors.black)
 
@@ -286,7 +286,7 @@ function update()
       f.draw_text(mon, middle-1, 10, "AUTO", colors.white, colors.gray)
     else
       f.draw_text(mon, middle-1, 10, "MANU", colors.white, colors.gray)
-      drawButtons(10)
+      drawFluxGateButtons(10)
     end
 
     local satPercent
