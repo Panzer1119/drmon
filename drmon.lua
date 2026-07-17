@@ -1,6 +1,6 @@
 -- modifiable variables
 local reactorSide = "back"
-local fluxgateSide = "right"
+local outputFluxgateSide = "right"
 
 local targetStrength = 20
 local maxTemperature = 8000
@@ -9,21 +9,25 @@ local lowestFieldPercent = 3
 
 local activateOnCharged = 1
 
+local inputRampRate = 5000 -- RF/t per update
+local outputRampRate = 5000
+
 -- please leave things untouched from here on
 os.loadAPI("lib/f")
 
-local version = "0.25"
+local version = "0.3"
 -- toggleable via the monitor, use our algorithm to achieve our target field strength or let the user tweak it
 local autoInputGate = 1
-local curInputGate = 222000
+local targetInputGate = 250000
+local targetOutputGate = 0
 
 -- monitor 
 local mon, monitor, monX, monY
 
 -- peripherals
 local reactor
-local fluxgate
-local inputfluxgate
+local inputFluxgate
+local outputFluxgate
 
 -- reactor information
 local ri
@@ -35,24 +39,24 @@ local emergencyTemp = false
 
 monitor_peripheral = f.periphSearch("monitor")
 monitor = window.create(monitor_peripheral, 1, 1, monitor_peripheral.getSize()) -- create a window on the monitor
-inputfluxgate = f.periphSearch("flow_gate")
-fluxgate = peripheral.wrap(fluxgateSide)
+inputFluxgate = f.periphSearch("flow_gate")
+outputFluxgate = peripheral.wrap(outputFluxgateSide)
 reactor = peripheral.wrap(reactorSide)
 
 if monitor == null then
 	error("No valid monitor was found")
 end
 
-if fluxgate == null then
-	error("No valid fluxgate was found")
-end
-
 if reactor == null then
 	error("No valid reactor was found")
 end
 
-if inputfluxgate == null then
-	error("No valid flux gate was found")
+if inputFluxgate == null then
+	error("No valid input flux gate was found")
+end
+
+if outputFluxgate == null then
+	error("No valid output flux gate was found")
 end
 
 monX, monY = monitor.getSize()
@@ -64,7 +68,8 @@ function save_config()
   sw = fs.open("config.txt", "w")   
   sw.writeLine(version)
   sw.writeLine(autoInputGate)
-  sw.writeLine(curInputGate)
+  sw.writeLine(targetInputGate)
+  sw.writeLine(targetOutputGate)
   sw.close()
 end
 
@@ -73,7 +78,8 @@ function load_config()
   sr = fs.open("config.txt", "r")
   version = sr.readLine()
   autoInputGate = tonumber(sr.readLine())
-  curInputGate = tonumber(sr.readLine())
+  targetInputGate = tonumber(sr.readLine())
+  targetOutputGate = tonumber(sr.readLine())
   sr.close()
 end
 
@@ -95,21 +101,20 @@ function buttons()
     -- 2-4 = -1000, 6-9 = -10000, 10-12,8 = -100000
     -- 17-19 = +1000, 21-23 = +10000, 25-27 = +100000
     if yPos == 8 then
-      local cFlow = fluxgate.getSignalLowFlow()
       if xPos >= 2 and xPos <= 4 then
-        cFlow = cFlow-1000
+        targetOutputGate = targetOutputGate-1000
       elseif xPos >= 6 and xPos <= 9 then
-        cFlow = cFlow-10000
+        targetOutputGate = targetOutputGate-10000
       elseif xPos >= 10 and xPos <= 12 then
-        cFlow = cFlow-100000
+        targetOutputGate = targetOutputGate-100000
       elseif xPos >= 17 and xPos <= 19 then
-        cFlow = cFlow+100000
+        targetOutputGate = targetOutputGate+100000
       elseif xPos >= 21 and xPos <= 23 then
-        cFlow = cFlow+10000
+        targetOutputGate = targetOutputGate+10000
       elseif xPos >= 25 and xPos <= 27 then
-        cFlow = cFlow+1000
+        targetOutputGate = targetOutputGate+1000
       end
-      fluxgate.setSignalLowFlow(cFlow)
+      save_config()
     end
 
     -- input gate controls
@@ -117,19 +122,18 @@ function buttons()
     -- 17-19 = +1000, 21-23 = +10000, 25-27 = +100000
     if yPos == 10 and autoInputGate == 0 and xPos ~= 14 and xPos ~= 15 then
       if xPos >= 2 and xPos <= 4 then
-        curInputGate = curInputGate-1000
+        targetInputGate = targetInputGate-1000
       elseif xPos >= 6 and xPos <= 9 then
-        curInputGate = curInputGate-10000
+        targetInputGate = targetInputGate-10000
       elseif xPos >= 10 and xPos <= 12 then
-        curInputGate = curInputGate-100000
+        targetInputGate = targetInputGate-100000
       elseif xPos >= 17 and xPos <= 19 then
-        curInputGate = curInputGate+100000
+        targetInputGate = targetInputGate+100000
       elseif xPos >= 21 and xPos <= 23 then
-        curInputGate = curInputGate+10000
+        targetInputGate = targetInputGate+10000
       elseif xPos >= 25 and xPos <= 27 then
-        curInputGate = curInputGate+1000
+        targetInputGate = targetInputGate+1000
       end
-      inputfluxgate.setSignalLowFlow(curInputGate)
       save_config()
     end
 
@@ -160,6 +164,45 @@ function drawButtons(y)
   f.draw_text(mon, 25, y, " > ", colors.white, colors.gray)
 end
 
+function updateFluxGates(currentInputGate, currentOutputGate)
+    print("Current Input  Gate: ", currentInputGate)
+    print("Current Output Gate: ", currentOutputGate)
+    print("Target  Input  Gate: ", targetInputGate)
+    print("Target  Output Gate: ", targetOutputGate)
+    -------------------------------------------------
+    -- INPUT
+    -- Increasing input = instant
+    -- Decreasing input = ramp
+    -------------------------------------------------
+    if targetInputGate >= currentInputGate then
+        currentInputGate = targetInputGate
+    else
+        currentInputGate = math.max(
+            currentInputGate - inputRampRate,
+            targetInputGate
+        )
+    end
+
+    -------------------------------------------------
+    -- OUTPUT
+    -- Decreasing output = instant
+    -- Increasing output = ramp
+    -------------------------------------------------
+
+    if targetOutputGate <= currentOutputGate then
+        currentOutputGate = targetOutputGate
+    else
+        currentOutputGate = math.min(
+            currentOutputGate + outputRampRate,
+            targetOutputGate
+        )
+    end
+
+    print("New     Input  Gate: ", currentInputGate)
+    print("New     Output Gate: ", currentOutputGate)
+    inputFluxgate.setSignalLowFlow(currentInputGate)
+    outputFluxgate.setSignalLowFlow(currentOutputGate)
+end
 
 
 function update()
@@ -170,6 +213,10 @@ function update()
 
     ri = reactor.getReactorInfo()
 
+    -- Read actual gate values
+    currentInputGate = inputFluxgate.getSignalLowFlow()
+    currentOutputGate = outputFluxgate.getSignalLowFlow()
+
     -- print out all the infos from .getReactorInfo() to term
 
     if ri == nil then
@@ -179,8 +226,6 @@ function update()
     for k, v in pairs (ri) do
       print(k.. ": "..tostring(v))			
     end
-    print("Output Gate: ", fluxgate.getSignalLowFlow())
-    print("Input Gate: ", inputfluxgate.getSignalLowFlow())
 
     -- monitor output
 
@@ -204,12 +249,12 @@ function update()
     if ri.temperature >= 5000 and ri.temperature <= 6500 then tempColor = colors.orange end
     f.draw_text_lr(mon, 2, 6, 1, "Temperature", f.format_int(ri.temperature, 2) .. " C", colors.white, tempColor, colors.black)
 
-    f.draw_text_lr(mon, 2, 7, 1, "Output Gate", f.format_int(fluxgate.getSignalLowFlow()) .. " rf/t", colors.white, colors.blue, colors.black)
+    f.draw_text_lr(mon, 2, 7, 1, "Output Gate", f.format_int(currentOutputGate) .. " rf/t", colors.white, colors.blue, colors.black)
 
     -- buttons
     drawButtons(8)
 
-    f.draw_text_lr(mon, 2, 9, 1, "Input Gate", f.format_int(inputfluxgate.getSignalLowFlow()) .. " rf/t", colors.white, colors.blue, colors.black)
+    f.draw_text_lr(mon, 2, 9, 1, "Input Gate", f.format_int(currentInputGate) .. " rf/t", colors.white, colors.blue, colors.black)
 
     if autoInputGate == 1 then
       f.draw_text(mon, 14, 10, "AU", colors.white, colors.gray)
@@ -260,7 +305,7 @@ function update()
     
     -- are we charging? open the floodgates
     if ri.status == "warming_up" and ri.temperature <= 2000 then
-      inputfluxgate.setSignalLowFlow(900000)
+	  targetInputGate = 900000
       emergencyCharge = false
     end
 
@@ -279,13 +324,12 @@ function update()
     -- or set it to our saved setting since we are on manual
     if ri.status == "running" then
       if autoInputGate == 1 then 
-        fluxval = ri.fieldDrainRate / (1 - (targetStrength/100) )
-        print("Target Gate: ".. fluxval)
-        inputfluxgate.setSignalLowFlow(fluxval)
-      else
-        inputfluxgate.setSignalLowFlow(curInputGate)
+        targetInputGate = ri.fieldDrainRate / (1 - (targetStrength/100) )
       end
     end
+
+	-- Update the flux gates
+	updateFluxGates(currentInputGate, currentOutputGate)
 
     -- safeguards
     --
