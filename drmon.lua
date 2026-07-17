@@ -243,6 +243,7 @@ function update()
     f.draw_text_lr(mon, 2, 2, 1, "Draconic Reactor", string.upper(ri.status), colors.white, statusColor, colors.black)
 
     f.draw_text_lr(mon, 2, 4, 1, "Generation", f.format_int(ri.generationRate) .. " rf/t", colors.white, colors.lime, colors.black)
+    f.progress_bar_dual(mon, 2, 5, mon.X-2, ri.generationRate, currentOutputGate, colors.lime, colors.blue, colors.gray, targetOutputGate)
 
     local tempColor = colors.red
     if ri.temperature <= 5000 then tempColor = colors.green end
