@@ -496,6 +496,51 @@ function ReactorController:_shouldShutdown(snapshot)
     return false
 end
 
+function ReactorController:_shouldEmergencyShutdownForGateLoss(snapshot)
+    if snapshot.inputGate.connected and snapshot.outputGate.connected then
+        return false
+    end
+
+    if self._requestedMode == MODE_RUNNING then
+        return true
+    end
+
+    return snapshot.currentState == STATE_RUNNING
+        or snapshot.currentState == STATE_STARTING
+        or snapshot.currentState == STATE_STOPPING
+end
+
+function ReactorController:_handleFlowGateConnectionLoss(snapshot, plan)
+    self._requestedMode = MODE_STOPPED
+    self._lastShutdownReason = "flow_gate_connection_lost"
+    plan.desiredOutputRate = 0
+    plan.warnings[#plan.warnings + 1] = "flow gate connection lost; attempting emergency shutdown"
+
+    if snapshot.currentState == STATE_RUNNING or snapshot.currentState == STATE_STARTING then
+        self:_callReactor("stopReactor", plan, "stop_reactor")
+        plan.desiredInputRate = self:_getStoppingInputRate(snapshot)
+        plan.keepInputMinimum = true
+        plan.reportedState = STATE_STOPPING
+        plan.controlStatus = "shutdown_requested"
+        return self:_applyPlan(snapshot, plan)
+    end
+
+    if snapshot.currentState == STATE_STOPPING then
+        plan.desiredInputRate = self:_getStoppingInputRate(snapshot)
+        plan.keepInputMinimum = true
+        plan.reportedState = STATE_STOPPING
+        plan.controlStatus = "shutdown_requested"
+        return self:_applyPlan(snapshot, plan)
+    end
+
+    plan.desiredInputRate = 0
+    plan.keepInputMinimum = false
+    plan.reportedState = snapshot.currentState
+    plan.controlStatus = "peripheral_error"
+
+    return self:_applyPlan(snapshot, plan)
+end
+
 function ReactorController:_recordAction(plan, action)
     plan.actions[#plan.actions + 1] = action
 end
@@ -897,6 +942,10 @@ function ReactorController:update(deltaTime)
         actions = {},
         warnings = copyArray(snapshot.warnings),
     }
+
+    if self:_shouldEmergencyShutdownForGateLoss(snapshot) then
+        return self:_handleFlowGateConnectionLoss(snapshot, plan)
+    end
 
     if self._requestedMode == MODE_STOPPED then
         plan.desiredOutputRate = 0

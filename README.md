@@ -12,6 +12,7 @@ A fresh ComputerCraft/CC:Tweaked Lua reactor controller for a Draconic Evolution
 
 Passing peripheral names is recommended, because it lets the controller recover when peripherals disconnect and come back.
 If the reactor peripheral drops out, the controller holds the last known rates until the connection returns instead of making blind changes.
+If either flow gate drops out while the controller is active, the controller requests an emergency shutdown, cuts any still-connected output gate to `0`, and leaves itself in stopped mode until you explicitly call `start()` again.
 
 ```lua
 local ReactorController = require("drmon.reactor_controller")
@@ -89,3 +90,5 @@ Useful status strings from `getStatus().controlStatus`:
 - `ramping_output`: output is climbing toward the user target.
 - `at_target_output`: full target output is being produced.
 - `starting`, `stopping`, `needs_fuel`, `shutdown_requested`, `refuel_shutdown`, `peripheral_error`.
+
+`getStatus().lastShutdownReason` includes `flow_gate_connection_lost` when a flow gate disconnect triggered the shutdown path.
