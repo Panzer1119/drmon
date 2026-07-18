@@ -40,6 +40,10 @@ local Diagnostics = require(moduleName .. ".Diagnostics")
 local ReactorController = {}
 ReactorController.__index = ReactorController
 
+local function isReactorRunning(reactorInfo)
+    return reactorInfo.status == "running"
+end
+
 --[[
 Creates a new reactor controller.
 
@@ -87,7 +91,7 @@ Main update function. Call this regularly (typically 20 times per second).
 
 Parameters:
   deltaTime: seconds since last update
-  reactorInfo: table with at least {temperature, fieldStrength, maxFieldStrength, fieldDrainRate, ...}
+  reactorInfo: table with at least {temperature, fieldStrength, maxFieldStrength, fieldDrainRate, status, ...}
   currentInputFlux: current input flux gate output (RF/t)
   currentOutputFlux: current output flux gate output (RF/t)
 
@@ -106,7 +110,7 @@ function ReactorController:update(deltaTime, reactorInfo, currentInputFlux, curr
 
     -- Calculate field percentage
     local fieldPercent = 0
-      if reactorInfo.maxFieldStrength and reactorInfo.maxFieldStrength > 0 then
+    if reactorInfo.maxFieldStrength and reactorInfo.maxFieldStrength > 0 then
         fieldPercent = reactorInfo.fieldStrength / reactorInfo.maxFieldStrength
     end
     self.lastFieldPercent = fieldPercent
@@ -114,26 +118,35 @@ function ReactorController:update(deltaTime, reactorInfo, currentInputFlux, curr
     -- Store temperature for diagnostics
     self.lastTemperature = reactorInfo.temperature or 0
 
+    local states = StateMachine.getStates()
+    local running = isReactorRunning(reactorInfo)
+
+    if not running then
+        self.emergencyShutdown = false
+        StateMachine.forceTransition(self.stateMachine, states.OFFLINE)
+    end
+
     -- ========================================================================
-    -- SAFETY CHECKS: Emergency shutdown takes absolute priority
+    -- SAFETY CHECKS: Emergency shutdown takes absolute priority while running
     -- ========================================================================
 
     -- Check minimum field
-    if fieldPercent < self.config.minimumFieldPercent then
+    if running and fieldPercent < self.config.minimumFieldPercent then
         if not self.emergencyShutdown then
             self:_triggerEmergencyShutdown("Field strength below minimum")
         end
     end
 
     -- Check maximum temperature
-    if reactorInfo.temperature and reactorInfo.temperature > self.config.maximumTemperature then
+    if running and reactorInfo.temperature and reactorInfo.temperature > self.config.maximumTemperature then
         if not self.emergencyShutdown then
             self:_triggerEmergencyShutdown("Temperature exceeds maximum")
         end
     end
 
-    -- If emergency shutdown is triggered, return it immediately
-    if self.emergencyShutdown then
+    -- If emergency shutdown is triggered, return it immediately.
+    -- This only applies while the reactor is actively running.
+    if running and self.emergencyShutdown then
         return {
             inputFlux = 0,
             outputFlux = 0,
@@ -174,16 +187,16 @@ function ReactorController:update(deltaTime, reactorInfo, currentInputFlux, curr
     and (reactorInfo.temperature <= self.config.maximumTemperature * Constants.TEMPERATURE_MARGIN)
 
     -- Update state machine
-    local states = StateMachine.getStates()
-
-    if isSaturated then
-        StateMachine.tryTransition(self.stateMachine, states.SATURATED, Constants.STATE_CHANGE_DELAY)
-    elseif fieldPercent < self.config.targetFieldPercent then
-        StateMachine.tryTransition(self.stateMachine, states.RECOVERING, Constants.STATE_CHANGE_DELAY)
-    elseif isStable then
-        StateMachine.tryTransition(self.stateMachine, states.STABLE, Constants.STATE_CHANGE_DELAY)
-    else
-        StateMachine.tryTransition(self.stateMachine, states.LIMITED, Constants.STATE_CHANGE_DELAY)
+    if running then
+        if isSaturated then
+            StateMachine.tryTransition(self.stateMachine, states.SATURATED, Constants.STATE_CHANGE_DELAY)
+        elseif fieldPercent < self.config.targetFieldPercent then
+            StateMachine.tryTransition(self.stateMachine, states.RECOVERING, Constants.STATE_CHANGE_DELAY)
+        elseif isStable then
+            StateMachine.tryTransition(self.stateMachine, states.STABLE, Constants.STATE_CHANGE_DELAY)
+        else
+            StateMachine.tryTransition(self.stateMachine, states.LIMITED, Constants.STATE_CHANGE_DELAY)
+        end
     end
 
     -- Update output controller (adaptive output limiting)

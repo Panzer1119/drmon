@@ -4,6 +4,7 @@ StateMachine.lua - Controller state machine.
 The reactor controller operates in distinct states to make behavior predictable and tunable.
 
 States:
+- OFFLINE: Reactor is not running; no emergency shutdown should be requested
 - STABLE: Shield and field are healthy, output can increase
 - RECOVERING: Field below target, attempting to recover it
 - LIMITED: Output has hit an upper limit (saturation or request)
@@ -14,6 +15,7 @@ States:
 local StateMachine = {}
 
 local STATES = {
+    OFFLINE = "OFFLINE",
     STABLE = "STABLE",
     RECOVERING = "RECOVERING",
     LIMITED = "LIMITED",
@@ -26,7 +28,7 @@ Creates a new state machine.
 ]]
 function StateMachine.new()
     local sm = {
-        state = STATES.STABLE,
+        state = STATES.OFFLINE,
         stateTimer = 0,
         lastState = nil,
     }

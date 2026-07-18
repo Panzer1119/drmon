@@ -80,6 +80,7 @@ test("Basic update doesn't crash", function()
         maxFieldStrength = 100000,
         temperature = 5000,
         fieldDrainRate = 3000,
+        status = "running",
     }
 
     local result = controller:update(0.05, reactorInfo, 3000, 5000)
@@ -96,6 +97,7 @@ test("Returns numeric values", function()
         maxFieldStrength = 100000,
         temperature = 5000,
         fieldDrainRate = 3000,
+        status = "running",
     }
     local result = controller:update(0.05, reactorInfo, 3000, 5000)
 
@@ -115,6 +117,7 @@ test("Emergency shutdown on low field", function()
         maxFieldStrength = 100000,  -- 5% field
         temperature = 5000,
         fieldDrainRate = 3000,
+        status = "running",
     }
 
     local result = controller:update(0.05, reactorInfo, 3000, 5000)
@@ -132,6 +135,7 @@ test("Emergency shutdown on high temperature", function()
         maxFieldStrength = 100000,
         temperature = 9000,  -- Over limit
         fieldDrainRate = 3000,
+        status = "running",
     }
 
     local result = controller:update(0.05, reactorInfo, 3000, 5000)
@@ -149,6 +153,7 @@ test("Once in emergency, stays in emergency", function()
         maxFieldStrength = 100000,
         temperature = 5000,
         fieldDrainRate = 3000,
+        status = "running",
     }, 3000, 5000)
     assert(result1.emergencyShutdown == true)
 
@@ -158,8 +163,77 @@ test("Once in emergency, stays in emergency", function()
         maxFieldStrength = 100000,
         temperature = 5000,
         fieldDrainRate = 3000,
+        status = "running",
     }, 3000, 5000)
     assert(result2.emergencyShutdown == true)
+end)
+
+test("Offline state when reactor is cold", function()
+    local controller = ReactorController.new({
+        minimumFieldPercent = 0.20,
+        maximumTemperature = 8000,
+    })
+
+    local result = controller:update(0.05, {
+        fieldStrength = 0,
+        maxFieldStrength = 100000,
+        temperature = 20,
+        fieldDrainRate = 0,
+        status = "cold",
+    }, 0, 0)
+
+    local diags = controller:getDiagnostics()
+    assert(result.emergencyShutdown == false)
+    assert(diags.state == "OFFLINE")
+    assert(controller:getEmergencyShutdownReason() == nil)
+end)
+
+test("No emergency shutdown while stopping", function()
+    local controller = ReactorController.new({
+        minimumFieldPercent = 0.20,
+        maximumTemperature = 8000,
+    })
+
+    local result = controller:update(0.05, {
+        fieldStrength = 1000,
+        maxFieldStrength = 100000,
+        temperature = 9000,
+        fieldDrainRate = 3000,
+        status = "stopping",
+    }, 3000, 5000)
+
+    local diags = controller:getDiagnostics()
+    assert(result.emergencyShutdown == false)
+    assert(diags.state == "OFFLINE")
+end)
+
+test("Emergency state clears to offline when reactor stops running", function()
+    local controller = ReactorController.new({
+        minimumFieldPercent = 0.20,
+        maximumTemperature = 8000,
+    })
+
+    local runningResult = controller:update(0.05, {
+        fieldStrength = 5000,
+        maxFieldStrength = 100000,
+        temperature = 5000,
+        fieldDrainRate = 3000,
+        status = "running",
+    }, 3000, 5000)
+    assert(runningResult.emergencyShutdown == true)
+
+    local coolingResult = controller:update(0.05, {
+        fieldStrength = 0,
+        maxFieldStrength = 100000,
+        temperature = 4000,
+        fieldDrainRate = 0,
+        status = "cooling",
+    }, 0, 0)
+
+    local diags = controller:getDiagnostics()
+    assert(coolingResult.emergencyShutdown == false)
+    assert(controller.emergencyShutdown == false)
+    assert(diags.state == "OFFLINE")
 end)
 
 test("Reset clears emergency shutdown", function()
@@ -173,6 +247,7 @@ test("Reset clears emergency shutdown", function()
         maxFieldStrength = 100000,
         temperature = 5000,
         fieldDrainRate = 3000,
+        status = "running",
     }, 3000, 5000)
     assert(controller.emergencyShutdown == true)
 
@@ -186,6 +261,7 @@ test("Reset clears emergency shutdown", function()
         maxFieldStrength = 100000,
         temperature = 5000,
         fieldDrainRate = 3000,
+        status = "running",
     }, 3000, 5000)
     assert(result.emergencyShutdown == false)
 end)
@@ -207,6 +283,7 @@ test("Manual input mode respects target", function()
         maxFieldStrength = 100000,
         temperature = 5000,
         fieldDrainRate = 3000,
+        status = "running",
     }
 
     local result = controller:update(0.05, reactorInfo, 3000, 5000)
@@ -224,6 +301,7 @@ test("Input respects maximum limit", function()
         maxFieldStrength = 100000,
         temperature = 5000,
         fieldDrainRate = 50000,  -- Very high drain
+        status = "running",
     }
 
     local result = controller:update(0.05, reactorInfo, 3000, 5000)
@@ -241,6 +319,7 @@ test("Input never goes negative", function()
         maxFieldStrength = 100000,
         temperature = 5000,
         fieldDrainRate = 0,  -- No drain
+        status = "running",
     }
 
     local result = controller:update(0.05, reactorInfo, 3000, 5000)
@@ -265,6 +344,7 @@ test("Output respects commanded target", function()
         maxFieldStrength = 100000,
         temperature = 5000,
         fieldDrainRate = 3000,
+        status = "running",
     }
 
     for i = 1, 100 do
@@ -286,6 +366,7 @@ test("Output is zero when not configured", function()
         maxFieldStrength = 100000,
         temperature = 5000,
         fieldDrainRate = 3000,
+        status = "running",
     }
 
     local result = controller:update(0.05, reactorInfo, 3000, 5000)
@@ -305,6 +386,7 @@ test("Diagnostics accessible", function()
         maxFieldStrength = 100000,
         temperature = 5000,
         fieldDrainRate = 3000,
+        status = "running",
     }
     controller:update(0.05, reactorInfo, 3000, 5000)
 
@@ -323,6 +405,7 @@ test("Diagnostics field is accurate", function()
         maxFieldStrength = 100000,  -- Should be 30%
         temperature = 5000,
         fieldDrainRate = 3000,
+        status = "running",
     }
     controller:update(0.05, reactorInfo, 3000, 5000)
 
