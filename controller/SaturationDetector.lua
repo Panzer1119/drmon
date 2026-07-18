@@ -19,9 +19,11 @@ Uses a confidence system to avoid single-update noise:
 - Hysteresis prevents oscillation
 ]]
 
+local relativePath = fs.getDir(select(2,...) or ""):gsub("^"..fs.getDir(shell.getRunningProgram()):gsub("([%.%+%-%*%?%[%]%^%$%(%)])","%%%1").."/?","")
+
 local SaturationDetector = {}
-local Helpers = require(script.parent .. ".Helpers")
-local Constants = require(script.parent .. ".Constants")
+local Helpers = require(relativePath .. ".Helpers")
+local Constants = require(relativePath .. ".Constants")
 
 --[[
 Creates a new saturation detector.

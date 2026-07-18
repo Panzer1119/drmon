@@ -9,9 +9,11 @@ Uses proportional control to maintain field near target:
 When autoInputFlux is disabled, uses the configured targetInputFlux.
 ]]
 
+local relativePath = fs.getDir(select(2,...) or ""):gsub("^"..fs.getDir(shell.getRunningProgram()):gsub("([%.%+%-%*%?%[%]%^%$%(%)])","%%%1").."/?","")
+
 local FieldController = {}
-local Helpers = require(script.parent .. ".Helpers")
-local Constants = require(script.parent .. ".Constants")
+local Helpers = require(relativePath .. ".Helpers")
+local Constants = require(relativePath .. ".Constants")
 
 --[[
 Creates a new field controller.
