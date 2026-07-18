@@ -14,6 +14,7 @@ This is a production-ready template for reactor control software.
 -- ============================================================================
 
 local PeripheralManager = {}
+PeripheralManager.__index = PeripheralManager
 
 function PeripheralManager.initialize()
 	local pm = {
@@ -44,6 +45,7 @@ function PeripheralManager.initialize()
 		pm.monitor = term  -- Fall back to console
 	end
 
+	setmetatable(pm, PeripheralManager)
 	return pm
 end
 
@@ -53,6 +55,7 @@ end
 -- ============================================================================
 
 local DisplayManager = {}
+DisplayManager.__index = DisplayManager
 
 function DisplayManager.new(monitor)
 	local dm = {
@@ -60,6 +63,7 @@ function DisplayManager.new(monitor)
 		lines = {},
 		dirty = true,
 	}
+	setmetatable(dm, DisplayManager)
 	return dm
 end
 
@@ -101,6 +105,7 @@ end
 -- ============================================================================
 
 local SafetyMonitor = {}
+SafetyMonitor.__index = SafetyMonitor
 
 function SafetyMonitor.new()
 	local sm = {
@@ -108,10 +113,11 @@ function SafetyMonitor.new()
 		emergencyShutdowns = 0,
 		lastEventTime = os.clock(),
 	}
+	setmetatable(sm, SafetyMonitor)
 	return sm
 end
 
-function SafetyMonitor.logEvent(sm, severity, message)
+function SafetyMonitor:logEvent(sm, severity, message)
 	local event = {
 		time = os.clock(),
 		severity = severity,  -- "INFO", "WARNING", "ERROR", "CRITICAL"
@@ -143,6 +149,7 @@ end
 local ReactorController = require("controller")
 
 local ReactorMonitor = {}
+ReactorMonitor.__index = ReactorMonitor
 
 function ReactorMonitor.new(config, peripherals)
 	local rm = {
@@ -168,6 +175,7 @@ function ReactorMonitor.new(config, peripherals)
 	rm.controller = controller
 
 	rm.safety:logEvent("INFO", "Reactor Monitor initialized")
+	setmetatable(rm, ReactorMonitor)
 	return rm
 end
 
