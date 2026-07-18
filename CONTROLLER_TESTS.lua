@@ -315,7 +315,7 @@ test("Input never goes negative", function()
     })
 
     local reactorInfo = {
-        fieldStrength = 99000,  -- Very high field
+        fieldStrength = 99000,  -- Very high field (99%), well above 50% target
         maxFieldStrength = 100000,
         temperature = 5000,
         fieldDrainRate = 0,  -- No drain
@@ -324,6 +324,34 @@ test("Input never goes negative", function()
 
     local result = controller:update(0.05, reactorInfo, 3000, 5000)
     assert(result.inputFlux >= 0, "Input should never be negative")
+end)
+
+test("Error correction is scaled to RF/t, not fraction-space", function()
+    -- When field is 10% below target and maxFieldStrength is large, the correction
+    -- must be significant relative to the drain rate, not a tiny fraction.
+    local controller = ReactorController.new({
+        autoInputFlux = true,
+        targetFieldPercent = 0.50,
+        minimumFieldPercent = 0.05,
+    })
+
+    local drainRate = 50000
+    local maxField  = 2000000
+    local reactorInfo = {
+        fieldStrength = 800000,     -- 40% field, 10% below target
+        maxFieldStrength = maxField,
+        temperature = 5000,
+        fieldDrainRate = drainRate,
+        status = "running",
+    }
+
+    local result = controller:update(0.05, reactorInfo, drainRate, 0)
+    -- Correction alone should be 0.10 * 2,000,000 * 0.5 = 100,000
+    -- So total input must be substantially above the drain rate
+    assert(result.inputFlux > drainRate,
+        "Input must exceed drain rate when field is below target")
+    assert(result.inputFlux > drainRate + 50000,
+        "Proportional correction must be meaningful relative to field scale")
 end)
 
 -- ============================================================================

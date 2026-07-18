@@ -9,14 +9,24 @@ local Constants = {
     -- State machine hysteresis (updates before state changes)
     STATE_CHANGE_DELAY = 5,
 
-    -- Field controller: proportional gain for field error correction
-    FIELD_ERROR_GAIN = 0.5,
+    -- Field controller: proportional gain for field error correction.
+    -- Formula: errorCorrection = (targetPercent - currentPercent) * maxFieldStrength * FIELD_ERROR_GAIN
+    -- Example: field 10% below target, maxFieldStrength = 2,000,000, gain = 0.5
+    --          => +100,000 RF/t added on top of the baseline drain rate.
+    -- Increase to react faster; decrease to reduce overshoot.
+    FIELD_ERROR_GAIN = 0.25,
 
-    -- Field controller: proportional gain for field velocity damping
+    -- Field controller: proportional gain for field velocity damping.
+    -- Formula: velocityCorrection = |fieldVelocityPerUpdate| * maxFieldStrength * FIELD_VELOCITY_GAIN
+    -- Applies only when the field is actively falling, to front-run the drop.
+    -- Example: field falling 0.05%/update, maxFieldStrength = 2,000,000, gain = 1.5
+    --          => +1,500 RF/t anticipatory boost.
+    -- Increase to damp faster falls more aggressively.
     FIELD_VELOCITY_GAIN = 0.3,
 
     -- Output ramping: maximum increase per second (fraction of maxOutput)
-    OUTPUT_RAMP_SPEED_DEFAULT = 0.05,
+    --OUTPUT_RAMP_SPEED_DEFAULT = 0.05,
+    OUTPUT_RAMP_SPEED_DEFAULT = 0.005,
 
     -- Output ramping: minimum increase per ramp step
     OUTPUT_RAMP_MIN_STEP = 0.1,
