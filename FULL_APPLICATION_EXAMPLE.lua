@@ -219,8 +219,14 @@ function ReactorMonitor.update(rm)
         rm.peripherals.outputFluxGate.setFlowOverride(result.outputFlux)
     end
 
+    -- Safety check: ignore emergency shutdown if reactor is cold
+    if reactorInfo.status == "cold" and result.emergencyShutdown then
+        --rm.safety:logEvent("INFO", "Emergency shutdown requested while reactor is cold; ignoring.")
+        result.emergencyShutdown = false
+    end
+
     -- Handle emergency shutdown
-    if result.emergencyShutdown and reactorInfo.status ~= "cold" then
+    if result.emergencyShutdown then
         rm:handleEmergencyShutdown()
     end
 
