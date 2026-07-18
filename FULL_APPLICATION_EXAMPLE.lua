@@ -220,7 +220,7 @@ function ReactorMonitor.update(rm)
     end
 
     -- Handle emergency shutdown
-    if result.emergencyShutdown then
+    if result.emergencyShutdown and reactorInfo.status ~= "cold" then
         rm:handleEmergencyShutdown()
     end
 
