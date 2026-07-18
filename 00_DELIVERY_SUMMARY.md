@@ -22,101 +22,108 @@ controller/
 ### Documentation Files (8 files)
 
 1. **CONTROLLER_README.md** - Overview and quick start
-   - Features, architecture, usage examples
-   - Configuration guide with presets
-   - API reference
-   - Safety notes
+    - Features, architecture, usage examples
+    - Configuration guide with presets
+    - API reference
+    - Safety notes
 
 2. **CONTROLLER_DOCUMENTATION.md** - Complete technical guide
-   - Module responsibilities
-   - Control algorithms explained
-   - State machine details
-   - Saturation detection algorithm
-   - Troubleshooting guide
+    - Module responsibilities
+    - Control algorithms explained
+    - State machine details
+    - Saturation detection algorithm
+    - Troubleshooting guide
 
 3. **QUICK_REFERENCE.lua** - One-page cheat sheet
-   - Minimal example
-   - Configuration fields summary
-   - Public API reference
-   - Common issues quick answers
+    - Minimal example
+    - Configuration fields summary
+    - Public API reference
+    - Common issues quick answers
 
 4. **CONTROLLER_EXAMPLE.lua** - Working code examples
-   - 5 complete working examples
-   - Conservative, balanced, aggressive presets
-   - Manual input mode example
+    - 5 complete working examples
+    - Conservative, balanced, aggressive presets
+    - Manual input mode example
 
 5. **CONTROLLER_TESTS.lua** - Complete test suite
-   - Configuration validation tests
-   - Update logic tests
-   - Emergency shutdown tests
-   - Field/output control tests
-   - Diagnostics tests
-   - Run with: lua CONTROLLER_TESTS.lua
+    - Configuration validation tests
+    - Update logic tests
+    - Emergency shutdown tests
+    - Field/output control tests
+    - Diagnostics tests
+    - Run with: lua CONTROLLER_TESTS.lua
 
 6. **FULL_APPLICATION_EXAMPLE.lua** - Complete application template
-   - PeripheralManager module
-   - DisplayManager module
-   - SafetyMonitor module
-   - ReactorMonitor main class
-   - Production-ready structure
+    - PeripheralManager module
+    - DisplayManager module
+    - SafetyMonitor module
+    - ReactorMonitor main class
+    - Production-ready structure
 
 7. **INSTALLATION_GUIDE.lua** - Deployment instructions
-   - Installation methods
-   - Folder structure
-   - First run procedure
-   - Troubleshooting
-   - Production checklist
+    - Installation methods
+    - Folder structure
+    - First run procedure
+    - Troubleshooting
+    - Production checklist
 
 8. **INDEX.lua** - Complete documentation index
-   - Directory structure
-   - Reading order
-   - Workflow guides
-   - Key concepts
-   - File checklist
+    - Directory structure
+    - Reading order
+    - Workflow guides
+    - Key concepts
+    - File checklist
 
 ---
 
 ## Key Features
 
 ### Safety (Highest Priority)
+
 ✅ Emergency shutdown on field drop or temperature rise  
 ✅ Never lets reactor explode - safety over performance  
-✅ Explicit safety thresholds configurable  
+✅ Explicit safety thresholds configurable
 
 ### Field Control (Second Priority)
+
 ✅ Proportional control with velocity damping  
 ✅ Automatic input flux calculation from field error  
 ✅ Manual input mode available  
-✅ Input power limits supported  
+✅ Input power limits supported
 
 ### Output Control (Third Priority)
+
 ✅ Adaptive output limiting discovers safe operating point  
 ✅ Conservative: increases slowly, decreases immediately  
 ✅ Output ramping speed depends on field margin  
-✅ Maintains memory of safe output achieved  
+✅ Maintains memory of safe output achieved
 
 ### Advanced Detection
+
 ✅ Saturation detector recognizes power starvation  
 ✅ Confidence-based decision making (reduces noise)  
-✅ Hysteresis prevents rapid oscillation  
+✅ Hysteresis prevents rapid oscillation
 
 ### State Machine
+
 ✅ 5 explicit states: STABLE, RECOVERING, LIMITED, SATURATED, EMERGENCY  
 ✅ Clear state transitions  
-✅ Predictable behavior  
+✅ Predictable behavior
 
 ### Diagnostics
+
 ✅ Complete visibility into controller state  
 ✅ UI-ready diagnostics output  
-✅ Current state, field%, velocity, temperature, etc.  
+✅ Current state, field%, velocity, temperature, etc.
 
 ### Code Quality
+
 ✅ Object-oriented design with metatables  
 ✅ Pure logic (never touches peripherals)  
 ✅ Fully documented and commented  
 ✅ Comprehensive examples  
 ✅ Test suite included  
-✅ No external dependencies  
+✅ No external dependencies
 
 ---
 
@@ -228,17 +235,20 @@ end
 ## Design Philosophy
 
 ### Priorities (in order)
+
 1. **Safety** - Never let reactor explode
 2. **Stability** - Keep field near target
 3. **Performance** - Reach requested output
 
 ### Control Strategy
+
 - **Field**: Proportional + velocity damping
 - **Output**: Adaptive limiting, gradual discovery
 - **Detection**: Saturation confidence-based
 - **State**: Explicit state machine with hysteresis
 
 ### Code Approach
+
 - Simple, deterministic (no AI or fuzzy logic)
 - Readable and maintainable
 - Conservative by default
@@ -259,36 +269,36 @@ end
 ✅ 3 configuration presets (conservative/balanced/aggressive)  
 ✅ Fully commented code  
 ✅ Diagnostics system  
-✅ State machine visualization  
+✅ State machine visualization
 
 ---
 
 ## Getting Started (Steps)
 
 1. **Read CONTROLLER_README.md** (10 min)
-   - Get overview of what this does
-   - Understand the architecture
-   - See quick start example
+    - Get overview of what this does
+    - Understand the architecture
+    - See quick start example
 
 2. **Run CONTROLLER_TESTS.lua** (2 min)
-   - Verify library works on your system
-   - See which tests pass
+    - Verify library works on your system
+    - See which tests pass
 
 3. **Copy controller/ folder** to your CC:Tweaked computer
 
 4. **Try QUICK_REFERENCE.lua example** (15 min)
-   - Basic integration with your reactor
-   - Adjust config values
+    - Basic integration with your reactor
+    - Adjust config values
 
 5. **Monitor with diagnostics** (ongoing)
-   - Watch controller state transitions
-   - Observe field percentage trend
-   - Check saturation confidence
+    - Watch controller state transitions
+    - Observe field percentage trend
+    - Check saturation confidence
 
 6. **Gradually increase output** (over time)
-   - Start conservative
-   - Monitor carefully
-   - Increase targetOutputFlux slowly
+    - Start conservative
+    - Monitor carefully
+    - Increase targetOutputFlux slowly
 
 ---
 
@@ -340,6 +350,7 @@ Full test suite included: `lua CONTROLLER_TESTS.lua`
 ## File Checklist
 
 **Controller Library (in controller/ folder):**
+
 - ✅ init.lua
 - ✅ Config.lua
 - ✅ Constants.lua
@@ -351,6 +362,7 @@ Full test suite included: `lua CONTROLLER_TESTS.lua`
 - ✅ Diagnostics.lua
 
 **Documentation:**
+
 - ✅ CONTROLLER_README.md
 - ✅ CONTROLLER_DOCUMENTATION.md
 - ✅ QUICK_REFERENCE.lua
@@ -376,6 +388,7 @@ Full test suite included: `lua CONTROLLER_TESTS.lua`
 ## Questions?
 
 All answers are in the documentation:
+
 - **How do I use this?** → CONTROLLER_README.md
 - **How does it work?** → CONTROLLER_DOCUMENTATION.md
 - **Quick answers?** → QUICK_REFERENCE.lua
@@ -389,7 +402,7 @@ All answers are in the documentation:
 
 **Target**: CC:Tweaked with Draconic Evolution mod  
 **Language**: Lua 5.2  
-**License**: Free to use and modify  
+**License**: Free to use and modify
 
 Enjoy safe, stable reactor control!
 

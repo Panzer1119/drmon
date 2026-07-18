@@ -1,16 +1,20 @@
 # Draconic Evolution Reactor Controller Library
 
-A production-quality, modular Lua library for controlling Draconic Evolution fusion reactors in CC:Tweaked (ComputerCraft: Tweaked).
+A production-quality, modular Lua library for controlling Draconic Evolution fusion reactors in CC:Tweaked
+(ComputerCraft: Tweaked).
 
 ## Overview
 
-This library implements **pure control logic** only. It never directly accesses peripherals. The application using this library is responsible for:
+This library implements **pure control logic** only. It never directly accesses peripherals. The application using this
+library is responsible for:
+
 - Reading reactor information
 - Reading flux gate values
 - Writing flux gate commands
 - Performing emergency shutdowns
 
 This separation of concerns makes the controller:
+
 - **Testable** without peripherals
 - **Reusable** in different applications
 - **Predictable** with no I/O latency surprises
@@ -36,13 +40,17 @@ controller/
 ### Module Responsibilities
 
 #### Config.lua
+
 Validates user-provided configuration and applies sensible defaults. Ensures:
+
 - All required fields are present
 - All values are in valid ranges
 - Internal consistency (e.g., minimum < target field strength)
 
 #### Constants.lua
+
 Centralized tuning parameters for:
+
 - State machine hysteresis delays
 - Proportional control gains
 - Ramp speeds and margins
@@ -52,7 +60,9 @@ Centralized tuning parameters for:
 Modify these values to adjust controller responsiveness.
 
 #### Helpers.lua
+
 Common utilities:
+
 - `clamp(value, min, max)` - Bound a value
 - `lerp(a, b, t)` - Linear interpolation
 - `adaptiveScale(value, minThresh, maxThresh, minMult, maxMult)` - Scaled interpolation
@@ -61,7 +71,9 @@ Common utilities:
 - `ema()` - Exponential moving average filtering
 
 #### StateMachine.lua
+
 Explicit state management to make behavior predictable:
+
 - **STABLE**: Field healthy, output can increase
 - **RECOVERING**: Field below target, focusing on recovery
 - **LIMITED**: Output at user limit or safety limit
@@ -71,7 +83,9 @@ Explicit state management to make behavior predictable:
 States only change after configurable delay to prevent oscillation.
 
 #### FieldController.lua
+
 Controls input flux to maintain shield field strength:
+
 1. **Baseline**: Uses `reactor.fieldDrainRate`
 2. **Error correction**: Proportional to `(targetField - currentField)`
 3. **Velocity damping**: Proportional to how fast field is falling
@@ -79,31 +93,39 @@ Controls input flux to maintain shield field strength:
 This keeps field near target while preventing oscillation.
 
 #### OutputController.lua
+
 Implements adaptive output limiting:
+
 1. **Commanded output**: User's requested output (upper limit)
 2. **Allowed output**: Controller's adaptive limit based on stability
 3. **Safe output**: Highest output achieved so far
 
 Key features:
+
 - Immediate output reduction if system is stressed
 - Gradual output increase when stable
 - Increase speed depends on field margin (more margin = faster increase)
 - Maintains memory of safe output achieved
 
 #### SaturationDetector.lua
+
 Detects when input power is limited:
 
 **Case 1**: `maximumInputFlux` configured
+
 - If input reaches limit and field still falling → saturated
 
 **Case 2**: `maximumInputFlux` not configured
+
 - Monitor behavior: input increasing but field not responding
 - Confidence builds over time
 - Decreases when field starts recovering
 - Hysteresis prevents oscillation
 
 #### Diagnostics.lua
+
 Provides UI-friendly diagnostics:
+
 - Current state and timers
 - Field percentage and velocity
 - Input/output commanded and actual values
@@ -116,17 +138,17 @@ Provides UI-friendly diagnostics:
 ### Priority Hierarchy
 
 1. **Highest**: Never let the reactor explode
-   - Emergency shutdown if field < minimum
-   - Emergency shutdown if temperature > maximum
+    - Emergency shutdown if field < minimum
+    - Emergency shutdown if temperature > maximum
 
 2. **Second**: Keep shield near target field strength
-   - Field controller maintains target via proportional control
-   - Velocity-based damping prevents oscillation
+    - Field controller maintains target via proportional control
+    - Velocity-based damping prevents oscillation
 
 3. **Third**: Reach requested output flux
-   - Output only increases when field is healthy
-   - Speed depends on available margin
-   - Adaptive limiting discovers maximum safe output
+    - Output only increases when field is healthy
+    - Speed depends on available margin
+    - Adaptive limiting discovers maximum safe output
 
 **Core principle**: Never sacrifice safety for performance.
 
@@ -139,6 +161,7 @@ Input = FieldDrainRate + FieldErrorCorrection + VelocityCorrection
 ```
 
 Where:
+
 - **FieldDrainRate**: Baseline from reactor (what it needs to stay even)
 - **FieldErrorCorrection**: Compensates if field is below target
 - **VelocityCorrection**: Boosts input if field is falling rapidly
@@ -154,6 +177,7 @@ CurrentOutput = min(CommandedOutput, AllowedOutput)
 ```
 
 **Allowed output adapts**:
+
 - Increases slowly when stable (rate depends on field margin)
 - Increases faster with plenty of shield reserve
 - Increases slowly with minimal shield reserve
@@ -165,6 +189,7 @@ This "learning" approach is safer than aggressively pushing output.
 ### Saturation Handling
 
 When input power cannot keep up:
+
 1. **Detection**: Confidence increases as input hits limit and field falls
 2. **Response**: Output immediately reduces
 3. **Recovery**: Confidence falls once field starts recovering
@@ -223,13 +248,16 @@ end
 
 ### API Reference
 
-#### ReactorController.new(config) → controller or (nil, error)
+#### ReactorController.new (config) → controller or (nil, error)
+
 Creates a controller instance. Returns nil with error message if config is invalid.
 
-#### controller:update(deltaTime, reactorInfo, inputFlux, outputFlux) → result
+#### controller:update (deltaTime, reactorInfo, inputFlux, outputFlux) → result
+
 Main update function. Call regularly (20 Hz recommended).
 
 Returns:
+
 ```lua
 {
     inputFlux = number,              -- Recommended input (RF/t)
@@ -238,8 +266,10 @@ Returns:
 }
 ```
 
-#### controller:getDiagnostics() → diags
+#### controller:getDiagnostics () → diags
+
 Returns current controller state suitable for UI display:
+
 ```lua
 {
     state = "STABLE" | "RECOVERING" | "LIMITED" | "SATURATED" | "EMERGENCY",
@@ -252,24 +282,29 @@ Returns current controller state suitable for UI display:
 }
 ```
 
-#### controller:getEmergencyShutdownReason() → reason
+#### controller:getEmergencyShutdownReason () → reason
+
 Returns the reason for emergency shutdown (if any).
 
-#### controller:reset()
+#### controller:reset ()
+
 Resets controller to initial state. Useful after emergency shutdown.
 
 ### Configuration
 
 #### Required Fields
+
 - `minimumFieldPercent` (0-1): Field shutdown threshold
 - `targetFieldPercent` (0-1): Desired field strength
 - `maximumTemperature` (°C): Temperature shutdown threshold
 
 #### Output Control
+
 - `targetOutputFlux` (RF/t): Desired output (or nil for no output)
 - `outputRampSpeed` (0-1): Max increase as fraction of target per second
 
 #### Input Control
+
 - `autoInputFlux` (bool): Auto-calculate from field error (default: true)
 - `targetInputFlux` (RF/t): Fixed input if autoInputFlux=false (default: 0)
 - `maximumInputFlux` (RF/t): Optional input limit (nil = no limit)
@@ -277,6 +312,7 @@ Resets controller to initial state. Useful after emergency shutdown.
 ### Recommended Configurations
 
 #### Conservative (Safe Operation)
+
 ```lua
 {
     minimumFieldPercent = 0.20,
@@ -290,6 +326,7 @@ Resets controller to initial state. Useful after emergency shutdown.
 ```
 
 #### Balanced (Default)
+
 ```lua
 {
     minimumFieldPercent = 0.15,
@@ -303,6 +340,7 @@ Resets controller to initial state. Useful after emergency shutdown.
 ```
 
 #### Aggressive (High Output)
+
 ```lua
 {
     minimumFieldPercent = 0.10,
@@ -351,6 +389,7 @@ This controller prioritizes:
 4. **Readability** over brevity
 
 It uses:
+
 - Explicit state machines (not implicit behavior)
 - Proportional control (not PID or fuzzy logic)
 - Hysteresis (to prevent oscillation)
@@ -362,21 +401,25 @@ This makes the reactor feel like it's under reliable, predictable control rather
 ## Troubleshooting
 
 ### Field won't increase
+
 - Check `maximumInputFlux` isn't too low
 - Verify reactor's `fieldDrainRate` is realistic
 - Check temperature isn't near limit
 
 ### Output not reaching target
+
 - Field may be too low (check `fieldPercent` in diagnostics)
 - Reactor may be saturated (check `saturationConfidence`)
 - Check `outputRampSpeed` isn't too conservative
 
 ### Reactor keeps shutting down
+
 - Check `minimumFieldPercent` isn't too high
 - Verify input power is sufficient for target output
 - Check `maximumTemperature` isn't too low
 
 ### Rapid state changes
+
 - Increase `STATE_CHANGE_DELAY` in Constants.lua
 - Check for hardware latency (is reactor responding to commands?)
 - Verify update rate is consistent

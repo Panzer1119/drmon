@@ -21,7 +21,9 @@ local result = controller:update(
 
 inputFluxGate.setFlowOverride(result.inputFlux)
 outputFluxGate.setFlowOverride(result.outputFlux)
-if result.emergencyShutdown then reactor.stopReactor() end
+if result.emergencyShutdown then
+    reactor.stopReactor()
+end
 
 
 -- ============================================================================
@@ -102,7 +104,7 @@ local controller = ReactorController.new({
 -- Main loop
 local lastTime = os.clock()
 while true do
-    -- Timing
+-- Timing
     local now = os.clock()
     local deltaTime = now - lastTime
     lastTime = now
