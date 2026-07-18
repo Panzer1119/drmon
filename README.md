@@ -44,7 +44,7 @@ end
 
 ## Behavior
 
-1. The controller prefers flow gate override mode when it is available and seeds the override from the current live flow so a reboot does not cause a sudden spike.
+1. The controller always enables flow gate override mode and seeds the override from the current live flow so a reboot does not cause a sudden spike.
 2. While running, input increases immediately when the field needs help, output only ramps upward, and input reductions are ramp-limited.
 3. Output increases are paired with a preemptive input boost so a target increase does not leave the field exposed.
 4. The controller stores its desired run state, config, and last commanded rates with `textutils.serialize`.
