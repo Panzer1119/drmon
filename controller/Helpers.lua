@@ -8,16 +8,20 @@ local Helpers = {}
 Clamps a value between min and max.
 ]]
 function Helpers.clamp(value, min, max)
-	if value < min then return min end
-	if value > max then return max end
-	return value
+    if value < min then
+        return min
+    end
+    if value > max then
+        return max
+    end
+    return value
 end
 
 --[[
 Linear interpolation between a and b by factor t (0-1).
 ]]
 function Helpers.lerp(a, b, t)
-	return a + (b - a) * t
+    return a + (b - a) * t
 end
 
 --[[
@@ -33,15 +37,15 @@ Returns maxMultiplier if value >= maxThreshold
 Interpolates between for values in the range.
 ]]
 function Helpers.adaptiveScale(value, minThreshold, maxThreshold, minMultiplier, maxMultiplier)
-	if value <= minThreshold then
-		return minMultiplier
-	end
-	if value >= maxThreshold then
-		return maxMultiplier
-	end
+    if value <= minThreshold then
+        return minMultiplier
+    end
+    if value >= maxThreshold then
+        return maxMultiplier
+    end
 
-	local t = (value - minThreshold) / (maxThreshold - minThreshold)
-	return Helpers.lerp(minMultiplier, maxMultiplier, t)
+    local t = (value - minThreshold) / (maxThreshold - minThreshold)
+    return Helpers.lerp(minMultiplier, maxMultiplier, t)
 end
 
 --[[
@@ -54,17 +58,17 @@ newSample: new data point
 Returns updated average.
 ]]
 function Helpers.ema(alpha, oldAverage, newSample)
-	if oldAverage == nil then
-		return newSample
-	end
-	return oldAverage * (1 - alpha) + newSample * alpha
+    if oldAverage == nil then
+        return newSample
+    end
+    return oldAverage * (1 - alpha) + newSample * alpha
 end
 
 --[[
 Calculates proportional control output: gain * error
 ]]
 function Helpers.proportional(gain, error)
-	return gain * error
+    return gain * error
 end
 
 --[[
@@ -80,28 +84,28 @@ direction: "increasing" to detect crossing upward, "decreasing" for downward
 Returns true if threshold should be considered crossed.
 ]]
 function Helpers.hysteresisThreshold(currentValue, threshold, hysteresis, direction)
-	if direction == "increasing" then
-		return currentValue >= (threshold + hysteresis)
-	elseif direction == "decreasing" then
-		return currentValue <= (threshold - hysteresis)
-	end
-	return false
+    if direction == "increasing" then
+        return currentValue >= (threshold + hysteresis)
+    elseif direction == "decreasing" then
+        return currentValue <= (threshold - hysteresis)
+    end
+    return false
 end
 
 --[[
 Formats a number as a percentage string.
 ]]
 function Helpers.formatPercent(value, decimals)
-	decimals = decimals or 2
-	return string.format("%." .. decimals .. "f%%", value * 100)
+    decimals = decimals or 2
+    return string.format("%." .. decimals .. "f%%", value * 100)
 end
 
 --[[
 Formats a number with commas for readability.
 ]]
 function Helpers.formatNumber(value, decimals)
-	decimals = decimals or 0
-	return string.format("%." .. decimals .. "f", value)
+    decimals = decimals or 0
+    return string.format("%." .. decimals .. "f", value)
 end
 
 --[[
@@ -109,11 +113,11 @@ Deep copy of a table (non-recursive).
 Suitable for tables without nested tables.
 ]]
 function Helpers.tableCopy(t)
-	local copy = {}
-	for k, v in pairs(t) do
-		copy[k] = v
-	end
-	return copy
+    local copy = {}
+    for k, v in pairs(t) do
+        copy[k] = v
+    end
+    return copy
 end
 
 return Helpers
