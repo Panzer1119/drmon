@@ -12,6 +12,7 @@ When autoInputFlux is disabled, uses the configured targetInputFlux.
 local relativePath = fs.getDir(select(2,...) or ""):gsub("^"..fs.getDir(shell.getRunningProgram()):gsub("([%.%+%-%*%?%[%]%^%$%(%)])","%%%1").."/?","")
 
 local FieldController = {}
+FieldController.__index = FieldController
 local Helpers = require(relativePath .. ".Helpers")
 local Constants = require(relativePath .. ".Constants")
 
@@ -25,6 +26,7 @@ function FieldController.new(config)
 		fieldVelocity = 0,
 		commandedInput = 0,
 	}
+	setmetatable(fc, FieldController)
 	return fc
 end
 

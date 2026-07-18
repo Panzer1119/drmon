@@ -19,6 +19,7 @@ safe output without sacrificing stability for performance.
 local relativePath = fs.getDir(select(2,...) or ""):gsub("^"..fs.getDir(shell.getRunningProgram()):gsub("([%.%+%-%*%?%[%]%^%$%(%)])","%%%1").."/?","")
 
 local OutputController = {}
+OutputController.__index = OutputController
 local Helpers = require(relativePath .. ".Helpers")
 local Constants = require(relativePath .. ".Constants")
 
@@ -33,6 +34,7 @@ function OutputController.new(config)
 		safeOutput = 0,
 		lastActualOutput = 0,
 	}
+	setmetatable(oc, OutputController)
 	return oc
 end
 

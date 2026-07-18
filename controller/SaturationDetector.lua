@@ -22,6 +22,7 @@ Uses a confidence system to avoid single-update noise:
 local relativePath = fs.getDir(select(2,...) or ""):gsub("^"..fs.getDir(shell.getRunningProgram()):gsub("([%.%+%-%*%?%[%]%^%$%(%)])","%%%1").."/?","")
 
 local SaturationDetector = {}
+SaturationDetector.__index = SaturationDetector
 local Helpers = require(relativePath .. ".Helpers")
 local Constants = require(relativePath .. ".Constants")
 
@@ -37,6 +38,7 @@ function SaturationDetector.new(config)
 		fieldWasIncreasing = false,
 		lastFieldPercent = nil,
 	}
+	setmetatable(detector, SaturationDetector)
 	return detector
 end
 
