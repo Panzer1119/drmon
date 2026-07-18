@@ -106,8 +106,8 @@ Once installed, test on the CC:Tweaked computer:
 
    -- Test update
    local result = controller:update(0.05, {
-       fieldEnergy = 50000,
-       maxFieldEnergy = 100000,
+       fieldStrength = 50000,
+       maxFieldStrength = 100000,
        temperature = 5000,
        fieldDrainRate = 3000,
    }, 3000, 5000)

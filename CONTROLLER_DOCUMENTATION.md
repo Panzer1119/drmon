@@ -323,8 +323,8 @@ The controller can be tested without peripherals by directly calling `update()` 
 local controller = ReactorController.new(config)
 
 local reactorData = {
-    fieldEnergy = 50000,
-    maxFieldEnergy = 100000,
+    fieldStrength = 50000,
+    maxFieldStrength = 100000,
     temperature = 5000,
     fieldDrainRate = 3000,
 }

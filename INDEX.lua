@@ -265,7 +265,7 @@ WORKFLOW: I want to tune for my setup
 
 --[[
 FIELD PERCENTAGE
-  Calculated from: fieldEnergy / maxFieldEnergy
+  Calculated from: fieldStrength / maxFieldStrength
   Represents shield health as 0.0 to 1.0
   Target should be 0.3-0.6 for stable operation
 

@@ -76,8 +76,8 @@ test("Basic update doesn't crash", function()
 	})
 
 	local reactorInfo = {
-		fieldEnergy = 50000,
-		maxFieldEnergy = 100000,
+		fieldStrength = 50000,
+		maxFieldStrength = 100000,
 		temperature = 5000,
 		fieldDrainRate = 3000,
 	}
@@ -92,8 +92,8 @@ end)
 test("Returns numeric values", function()
 	local controller = ReactorController.new({})
 	local reactorInfo = {
-		fieldEnergy = 50000,
-		maxFieldEnergy = 100000,
+		fieldStrength = 50000,
+		maxFieldStrength = 100000,
 		temperature = 5000,
 		fieldDrainRate = 3000,
 	}
@@ -111,8 +111,8 @@ test("Emergency shutdown on low field", function()
 	})
 
 	local reactorInfo = {
-		fieldEnergy = 5000,
-		maxFieldEnergy = 100000,  -- 5% field
+		fieldStrength = 5000,
+		maxFieldStrength = 100000,  -- 5% field
 		temperature = 5000,
 		fieldDrainRate = 3000,
 	}
@@ -128,8 +128,8 @@ test("Emergency shutdown on high temperature", function()
 	})
 
 	local reactorInfo = {
-		fieldEnergy = 50000,
-		maxFieldEnergy = 100000,
+		fieldStrength = 50000,
+		maxFieldStrength = 100000,
 		temperature = 9000,  -- Over limit
 		fieldDrainRate = 3000,
 	}
@@ -145,8 +145,8 @@ test("Once in emergency, stays in emergency", function()
 
 	-- First update: trigger emergency
 	local result1 = controller:update(0.05, {
-		fieldEnergy = 5000,
-		maxFieldEnergy = 100000,
+		fieldStrength = 5000,
+		maxFieldStrength = 100000,
 		temperature = 5000,
 		fieldDrainRate = 3000,
 	}, 3000, 5000)
@@ -154,8 +154,8 @@ test("Once in emergency, stays in emergency", function()
 
 	-- Second update: field recovers, but still in emergency
 	local result2 = controller:update(0.05, {
-		fieldEnergy = 60000,
-		maxFieldEnergy = 100000,
+		fieldStrength = 60000,
+		maxFieldStrength = 100000,
 		temperature = 5000,
 		fieldDrainRate = 3000,
 	}, 3000, 5000)
@@ -169,8 +169,8 @@ test("Reset clears emergency shutdown", function()
 
 	-- Trigger emergency
 	controller:update(0.05, {
-		fieldEnergy = 5000,
-		maxFieldEnergy = 100000,
+		fieldStrength = 5000,
+		maxFieldStrength = 100000,
 		temperature = 5000,
 		fieldDrainRate = 3000,
 	}, 3000, 5000)
@@ -178,12 +178,12 @@ test("Reset clears emergency shutdown", function()
 
 	-- Reset
 	controller:reset()
-	assert(controller.emergencyShutdown == false)
+	assert(not controller.emergencyShutdown)
 
 	-- Verify normal operation resumes
 	local result = controller:update(0.05, {
-		fieldEnergy = 50000,
-		maxFieldEnergy = 100000,
+		fieldStrength = 50000,
+		maxFieldStrength = 100000,
 		temperature = 5000,
 		fieldDrainRate = 3000,
 	}, 3000, 5000)
@@ -203,8 +203,8 @@ test("Manual input mode respects target", function()
 	})
 
 	local reactorInfo = {
-		fieldEnergy = 50000,
-		maxFieldEnergy = 100000,
+		fieldStrength = 50000,
+		maxFieldStrength = 100000,
 		temperature = 5000,
 		fieldDrainRate = 3000,
 	}
@@ -220,8 +220,8 @@ test("Input respects maximum limit", function()
 	})
 
 	local reactorInfo = {
-		fieldEnergy = 10000,  -- Very low field
-		maxFieldEnergy = 100000,
+		fieldStrength = 10000,  -- Very low field
+		maxFieldStrength = 100000,
 		temperature = 5000,
 		fieldDrainRate = 50000,  -- Very high drain
 	}
@@ -237,8 +237,8 @@ test("Input never goes negative", function()
 	})
 
 	local reactorInfo = {
-		fieldEnergy = 99000,  -- Very high field
-		maxFieldEnergy = 100000,
+		fieldStrength = 99000,  -- Very high field
+		maxFieldStrength = 100000,
 		temperature = 5000,
 		fieldDrainRate = 0,  -- No drain
 	}
@@ -261,14 +261,14 @@ test("Output respects commanded target", function()
 
 	-- Run for several updates with perfect conditions
 	local reactorInfo = {
-		fieldEnergy = 60000,
-		maxFieldEnergy = 100000,
+		fieldStrength = 60000,
+		maxFieldStrength = 100000,
 		temperature = 5000,
 		fieldDrainRate = 3000,
 	}
 
 	for i = 1, 100 do
-		local result = controller:update(1.0, reactorInfo, 3000, 5000)
+		controller:update(1.0, reactorInfo, 3000, 5000)
 		-- Output should eventually reach target (or get close)
 	end
 
@@ -282,8 +282,8 @@ test("Output is zero when not configured", function()
 	})
 
 	local reactorInfo = {
-		fieldEnergy = 50000,
-		maxFieldEnergy = 100000,
+		fieldStrength = 50000,
+		maxFieldStrength = 100000,
 		temperature = 5000,
 		fieldDrainRate = 3000,
 	}
@@ -301,8 +301,8 @@ print("\n=== Diagnostics Tests ===")
 test("Diagnostics accessible", function()
 	local controller = ReactorController.new({})
 	local reactorInfo = {
-		fieldEnergy = 50000,
-		maxFieldEnergy = 100000,
+		fieldStrength = 50000,
+		maxFieldStrength = 100000,
 		temperature = 5000,
 		fieldDrainRate = 3000,
 	}
@@ -319,8 +319,8 @@ end)
 test("Diagnostics field is accurate", function()
 	local controller = ReactorController.new({})
 	local reactorInfo = {
-		fieldEnergy = 30000,
-		maxFieldEnergy = 100000,  -- Should be 30%
+		fieldStrength = 30000,
+		maxFieldStrength = 100000,  -- Should be 30%
 		temperature = 5000,
 		fieldDrainRate = 3000,
 	}

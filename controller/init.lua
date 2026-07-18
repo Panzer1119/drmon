@@ -87,7 +87,7 @@ Main update function. Call this regularly (typically 20 times per second).
 
 Parameters:
   deltaTime: seconds since last update
-  reactorInfo: table with at least {energy, maxEnergy, temperature, fieldDrainRate, ...}
+  reactorInfo: table with at least {temperature, fieldStrength, maxFieldStrength, fieldDrainRate, ...}
   currentInputFlux: current input flux gate output (RF/t)
   currentOutputFlux: current output flux gate output (RF/t)
 
@@ -106,8 +106,8 @@ function ReactorController:update(deltaTime, reactorInfo, currentInputFlux, curr
 
     -- Calculate field percentage
     local fieldPercent = 0
-    if reactorInfo.maxFieldEnergy and reactorInfo.maxFieldEnergy > 0 then
-        fieldPercent = reactorInfo.fieldEnergy / reactorInfo.maxFieldEnergy
+      if reactorInfo.maxFieldStrength and reactorInfo.maxFieldStrength > 0 then
+        fieldPercent = reactorInfo.fieldStrength / reactorInfo.maxFieldStrength
     end
     self.lastFieldPercent = fieldPercent
 
