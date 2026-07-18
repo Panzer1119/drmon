@@ -117,7 +117,7 @@ function SafetyMonitor.new()
 	return sm
 end
 
-function SafetyMonitor:logEvent(sm, severity, message)
+function SafetyMonitor.logEvent(sm, severity, message)
 	local event = {
 		time = os.clock(),
 		severity = severity,  -- "INFO", "WARNING", "ERROR", "CRITICAL"
