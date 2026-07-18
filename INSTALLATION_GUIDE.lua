@@ -202,7 +202,7 @@ Expected setup:
 1. PREPARE
    □ Ensure reactor has good field (>50%)
    □ Ensure reactor is at low temperature
-   □ Set flux gates to 0 with: gate.setFlowOverride(0)
+   □ Set flux gates to 0 with: gate.setSignalLowFlow(0)
 
 2. START WITH CONSERVATIVE CONFIG
    □ minimumFieldPercent = 0.20 (high, safe)
@@ -222,7 +222,7 @@ Expected setup:
 
 5. IF PROBLEMS:
    □ Stop immediately (Ctrl+T)
-   □ Reset flux gates: setFlowOverride(0)
+   □ Reset flux gates: setSignalLowFlow(0)
    □ Check diagnostics
    □ Try even more conservative values
    □ Verify reactor isn't already struggling
@@ -314,7 +314,7 @@ If you encounter issues:
 
 4. VERIFY HARDWARE
    - Reactor responds: reactor.stopReactor() then stopReactor()
-   - Input gate works: gate.setFlowOverride(1000) then setFlowOverride(0)
+   - Input gate works: gate.setSignalLowFlow(1000) then setSignalLowFlow(0)
    - Output gate works: same as input
 
 5. CHECK CONSTANTS

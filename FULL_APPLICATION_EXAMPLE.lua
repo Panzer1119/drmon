@@ -215,8 +215,8 @@ function ReactorMonitor.update(rm)
 
     -- Apply commands
     if not rm.state.paused then
-        rm.peripherals.inputFluxGate.setFlowOverride(result.inputFlux)
-        rm.peripherals.outputFluxGate.setFlowOverride(result.outputFlux)
+        rm.peripherals.inputFluxGate.setSignalLowFlow(result.inputFlux)
+        rm.peripherals.outputFluxGate.setSignalLowFlow(result.outputFlux)
     end
 
     -- Handle emergency shutdown
@@ -224,8 +224,8 @@ function ReactorMonitor.update(rm)
         rm:handleEmergencyShutdown()
     end
 
-    -- Update diagnostics every 20 cycles (1 second at 20 Hz)
-    if rm.state.updateCount % 20 == 0 then
+    -- Update diagnostics every 10 cycles (0.5 second at 20 Hz)
+    if rm.state.updateCount % 10 == 0 then
         rm:updateDisplay()
     end
 end

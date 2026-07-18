@@ -218,8 +218,8 @@ while true do
         outputGate.getFlow()
     )
 
-    inputGate.setFlowOverride(result.inputFlux)
-    outputGate.setFlowOverride(result.outputFlux)
+    inputGate.setSignalLowFlow(result.inputFlux)
+    outputGate.setSignalLowFlow(result.outputFlux)
 
     if result.emergencyShutdown then
         reactor.stopReactor()

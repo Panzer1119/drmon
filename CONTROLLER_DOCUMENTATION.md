@@ -232,8 +232,8 @@ while true do
     local result = controller:update(deltaTime, reactorInfo, inputFlux, outputFlux)
 
     -- Apply commands
-    inputFluxGate.setFlowOverride(result.inputFlux)
-    outputFluxGate.setFlowOverride(result.outputFlux)
+    inputFluxGate.setSignalLowFlow(result.inputFlux)
+    outputFluxGate.setSignalLowFlow(result.outputFlux)
 
     -- Handle emergency
     if result.emergencyShutdown then
