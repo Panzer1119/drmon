@@ -27,16 +27,15 @@ API:
   controller:getEmergencyShutdownReason() -> reason
 ]]
 
-local relativePath = fs.getDir(select(2,...) or ""):gsub("^"..fs.getDir(shell.getRunningProgram()):gsub("([%.%+%-%*%?%[%]%^%$%(%)])","%%%1").."/?","")
+local moduleName = ...
 
-local Config = require(relativePath .. ".Config")
-local Constants = require(relativePath .. ".Constants")
-local Helpers = require(relativePath .. ".Helpers")
-local StateMachine = require(relativePath .. ".StateMachine")
-local FieldController = require(relativePath .. ".FieldController")
-local OutputController = require(relativePath .. ".OutputController")
-local SaturationDetector = require(relativePath .. ".SaturationDetector")
-local Diagnostics = require(relativePath .. ".Diagnostics")
+local Config = require(moduleName .. ".Config")
+local Constants = require(moduleName .. ".Constants")
+local StateMachine = require(moduleName .. ".StateMachine")
+local FieldController = require(moduleName .. ".FieldController")
+local OutputController = require(moduleName .. ".OutputController")
+local SaturationDetector = require(moduleName .. ".SaturationDetector")
+local Diagnostics = require(moduleName .. ".Diagnostics")
 
 local ReactorController = {}
 ReactorController.__index = ReactorController

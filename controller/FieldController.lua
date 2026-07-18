@@ -9,12 +9,13 @@ Uses proportional control to maintain field near target:
 When autoInputFlux is disabled, uses the configured targetInputFlux.
 ]]
 
-local relativePath = fs.getDir(select(2,...) or ""):gsub("^"..fs.getDir(shell.getRunningProgram()):gsub("([%.%+%-%*%?%[%]%^%$%(%)])","%%%1").."/?","")
+local moduleName = ...
+local baseModuleName = moduleName:match("^(.*)%.[^.]+$")
 
 local FieldController = {}
 FieldController.__index = FieldController
-local Helpers = require(relativePath .. ".Helpers")
-local Constants = require(relativePath .. ".Constants")
+local Helpers = require(baseModuleName .. ".Helpers")
+local Constants = require(baseModuleName .. ".Constants")
 
 --[[
 Creates a new field controller.

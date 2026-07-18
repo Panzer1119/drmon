@@ -19,12 +19,12 @@ Uses a confidence system to avoid single-update noise:
 - Hysteresis prevents oscillation
 ]]
 
-local relativePath = fs.getDir(select(2,...) or ""):gsub("^"..fs.getDir(shell.getRunningProgram()):gsub("([%.%+%-%*%?%[%]%^%$%(%)])","%%%1").."/?","")
+local moduleName = ...
+local baseModuleName = moduleName:match("^(.*)%.[^.]+$")
 
 local SaturationDetector = {}
 SaturationDetector.__index = SaturationDetector
-local Helpers = require(relativePath .. ".Helpers")
-local Constants = require(relativePath .. ".Constants")
+local Constants = require(baseModuleName .. ".Constants")
 
 --[[
 Creates a new saturation detector.

@@ -16,12 +16,13 @@ This implements the "discovery" algorithm: gradually finding the highest
 safe output without sacrificing stability for performance.
 ]]
 
-local relativePath = fs.getDir(select(2,...) or ""):gsub("^"..fs.getDir(shell.getRunningProgram()):gsub("([%.%+%-%*%?%[%]%^%$%(%)])","%%%1").."/?","")
+local moduleName = ...
+local baseModuleName = moduleName:match("^(.*)%.[^.]+$")
 
 local OutputController = {}
 OutputController.__index = OutputController
-local Helpers = require(relativePath .. ".Helpers")
-local Constants = require(relativePath .. ".Constants")
+local Helpers = require(baseModuleName .. ".Helpers")
+local Constants = require(baseModuleName .. ".Constants")
 
 --[[
 Creates a new output controller.
