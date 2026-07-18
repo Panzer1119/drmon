@@ -315,7 +315,7 @@ function ReactorMonitor.handleEmergencyShutdown(rm)
 
 	-- Emergency shutdown
 	rm.peripherals.reactor.stopReactor()
-	rm.state.running = false
+	--rm.state.running = false
 
 	-- Alert
 	print("REACTOR EMERGENCY SHUTDOWN")
