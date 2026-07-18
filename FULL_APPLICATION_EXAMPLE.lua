@@ -43,6 +43,7 @@ function PeripheralManager.initialize()
 	pm.monitor = ({ peripheral.find("monitor") })[1]
 	if not pm.monitor then
 		pm.monitor = term  -- Fall back to console
+		print("Warning: Monitor not found, using console output.")
 	end
 
 	setmetatable(pm, PeripheralManager)
