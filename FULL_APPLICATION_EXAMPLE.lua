@@ -24,22 +24,22 @@ function PeripheralManager.initialize()
 	}
 
 	-- Find peripherals with error handling
-	pm.reactor = peripheral.find("draconic_reactor")
+	pm.reactor = ({ peripheral.find("draconic_reactor") })[1]
 	if not pm.reactor then
 		error("Draconic reactor not found!")
 	end
 
-	pm.inputFluxGate = peripheral.wrap("flux_gate_0")
+	pm.inputFluxGate = peripheral.wrap("flow_gate_0")
 	if not pm.inputFluxGate then
-		error("Input flux gate not found at 'flux_gate_0'!")
+		error("Input flux gate not found at 'flow_gate_0'!")
 	end
 
-	pm.outputFluxGate = peripheral.wrap("flux_gate_1")
+	pm.outputFluxGate = peripheral.wrap("flow_gate_1")
 	if not pm.outputFluxGate then
-		error("Output flux gate not found at 'flux_gate_1'!")
+		error("Output flux gate not found at 'flow_gate_1'!")
 	end
 
-	pm.monitor = peripheral.wrap("monitor_1")
+	pm.monitor = ({ peripheral.find("monitor") })[1]
 	if not pm.monitor then
 		pm.monitor = term  -- Fall back to console
 	end
