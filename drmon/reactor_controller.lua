@@ -22,6 +22,7 @@ local DEFAULT_CONFIG = {
     rateRampPerSecond = 500000,
     outputRampPerSecond = nil,
     inputRampDownPerSecond = nil,
+    restartCooldownSeconds = 10,
     minInputRate = 250000,
     outputBoostCompensationRatio = 0.5,
     fieldResponseMultiplier = 4,
@@ -100,6 +101,21 @@ local function normalizeStatus(value)
     return tostring(value or "unknown"):gsub("%s+", "_"):lower()
 end
 
+local function getCurrentTimeMillis()
+    if type(os) == "table" and type(os.epoch) == "function" then
+        local ok, timestamp = pcall(os.epoch, "utc")
+        if ok and type(timestamp) == "number" then
+            return timestamp
+        end
+    end
+
+    if type(os) == "table" and type(os.clock) == "function" then
+        return math.floor(os.clock() * 1000)
+    end
+
+    return nil
+end
+
 local function getRemainingFuel(info)
     return math.max(0, (tonumber(info.maxFuelConversion) or 0) - (tonumber(info.fuelConversion) or 0))
 end
@@ -167,6 +183,7 @@ local function normalizeConfig(baseConfig, overrides)
     expectNonNegative("rateRampPerSecond", config.rateRampPerSecond)
     expectNonNegative("outputRampPerSecond", config.outputRampPerSecond)
     expectNonNegative("inputRampDownPerSecond", config.inputRampDownPerSecond)
+    expectNonNegative("restartCooldownSeconds", config.restartCooldownSeconds)
     expectNonNegative("minInputRate", config.minInputRate)
     expectNonNegative("outputBoostCompensationRatio", config.outputBoostCompensationRatio)
     expectNonNegative("fieldResponseMultiplier", config.fieldResponseMultiplier)
@@ -449,6 +466,7 @@ function ReactorController:_collectSnapshot(deltaTime)
         energySaturationPercent = normalizePercent(info.energySaturation, info.maxEnergySaturation),
         remainingFuel = getRemainingFuel(info),
         fuelPercent = normalizePercent(getRemainingFuel(info), info.maxFuelConversion),
+        now = getCurrentTimeMillis(),
     }
 end
 
@@ -511,13 +529,15 @@ function ReactorController:_shouldEmergencyShutdownForGateLoss(snapshot)
 end
 
 function ReactorController:_handleFlowGateConnectionLoss(snapshot, plan)
-    self._requestedMode = MODE_STOPPED
     self._lastShutdownReason = "flow_gate_connection_lost"
+    self._restartAfterGateRecovery = self._requestedMode == MODE_RUNNING
     plan.desiredOutputRate = 0
     plan.warnings[#plan.warnings + 1] = "flow gate connection lost; attempting emergency shutdown"
 
     if snapshot.currentState == STATE_RUNNING or snapshot.currentState == STATE_STARTING then
-        self:_callReactor("stopReactor", plan, "stop_reactor")
+        if not self._stopRequested then
+            self:_callReactor("stopReactor", plan, "stop_reactor")
+        end
         plan.desiredInputRate = self:_getStoppingInputRate(snapshot)
         plan.keepInputMinimum = true
         plan.reportedState = STATE_STOPPING
@@ -541,8 +561,84 @@ function ReactorController:_handleFlowGateConnectionLoss(snapshot, plan)
     return self:_applyPlan(snapshot, plan)
 end
 
+function ReactorController:_handleGateRecoveryRestart(snapshot, plan)
+    if not self:_isAwaitingGateRecoveryRestart() then
+        return false
+    end
+
+    if not (snapshot.inputGate.connected and snapshot.outputGate.connected) then
+        return false
+    end
+
+    local cooldownRemaining = self:_getRestartCooldownRemaining(snapshot)
+
+    if snapshot.currentState == STATE_RUNNING or snapshot.currentState == STATE_STARTING then
+        if not self._stopRequested then
+            self:_callReactor("stopReactor", plan, "stop_reactor")
+        end
+        plan.desiredInputRate = self:_getStoppingInputRate(snapshot)
+        plan.desiredOutputRate = 0
+        plan.keepInputMinimum = true
+        plan.reportedState = STATE_STOPPING
+        plan.controlStatus = "restart_cooldown"
+        return true, self:_applyPlan(snapshot, plan)
+    end
+
+    if snapshot.currentState == STATE_STOPPING then
+        plan.desiredInputRate = self:_getStoppingInputRate(snapshot)
+        plan.desiredOutputRate = 0
+        plan.keepInputMinimum = true
+        plan.reportedState = STATE_STOPPING
+        plan.controlStatus = "restart_cooldown"
+        return true, self:_applyPlan(snapshot, plan)
+    end
+
+    if cooldownRemaining > 0 then
+        plan.desiredInputRate = 0
+        plan.desiredOutputRate = 0
+        plan.keepInputMinimum = false
+        plan.reportedState = snapshot.currentState
+        plan.controlStatus = "restart_cooldown"
+        return true, self:_applyPlan(snapshot, plan)
+    end
+
+    self._restartAfterGateRecovery = false
+    self._lastShutdownReason = nil
+    return false
+end
+
 function ReactorController:_recordAction(plan, action)
     plan.actions[#plan.actions + 1] = action
+end
+
+function ReactorController:_markStarted(timestamp)
+    self._lastStartedAt = timestamp or getCurrentTimeMillis() or self._lastStartedAt
+    self._lastShutdownReason = nil
+end
+
+function ReactorController:_markStopped(timestamp)
+    self._lastStoppedAt = timestamp or getCurrentTimeMillis() or self._lastStoppedAt
+end
+
+function ReactorController:_getRestartCooldownRemaining(snapshot)
+    local cooldownMillis = math.max(0, self._config.restartCooldownSeconds * 1000)
+
+    if cooldownMillis <= 0 or self._lastStoppedAt == nil then
+        return 0
+    end
+
+    local now = snapshot and snapshot.now or getCurrentTimeMillis()
+    if type(now) ~= "number" then
+        return 0
+    end
+
+    return math.max(0, cooldownMillis - math.max(0, now - self._lastStoppedAt))
+end
+
+function ReactorController:_isAwaitingGateRecoveryRestart()
+    return self._restartAfterGateRecovery
+        and self._requestedMode == MODE_RUNNING
+        and self._lastShutdownReason == "flow_gate_connection_lost"
 end
 
 function ReactorController:_callReactor(methodName, plan, actionName)
@@ -550,6 +646,18 @@ function ReactorController:_callReactor(methodName, plan, actionName)
 
     if ok then
         self:_recordAction(plan, actionName)
+
+        if methodName == "chargeReactor" or methodName == "activateReactor" then
+            self._stopRequested = false
+            self:_markStarted(plan.timestamp)
+        elseif methodName == "stopReactor" then
+            if not self._stopRequested then
+                self:_markStopped(plan.timestamp)
+            end
+
+            self._stopRequested = true
+        end
+
         return true
     end
 
@@ -621,6 +729,9 @@ function ReactorController:_persistState()
         appliedInputRate = self._appliedInputRate,
         appliedOutputRate = self._appliedOutputRate,
         lastShutdownReason = self._lastShutdownReason,
+        restartAfterGateRecovery = self._restartAfterGateRecovery,
+        lastStartedAt = self._lastStartedAt,
+        lastStoppedAt = self._lastStoppedAt,
         config = copyTable(self._config),
     }))
     handle.close()
@@ -640,10 +751,14 @@ function ReactorController:_makeStatus(info, state, currentInputRate, currentOut
     local fuelPercent = normalizePercent(remainingFuel, info.maxFuelConversion)
     local isThrottled = controlStatus == "throttled_field" or controlStatus == "throttled_temperature"
     local producingTarget = self._config.targetOutputRate <= 0 or currentOutputRate >= self._config.targetOutputRate
+    local restartCooldownRemaining = self:_getRestartCooldownRemaining({
+        now = getCurrentTimeMillis(),
+    })
 
     return {
         currentState = state,
         requestedMode = self._requestedMode,
+        desiredMode = self._requestedMode,
         controlStatus = controlStatus,
         productionStatus = controlStatus,
         reactorStatus = info.status,
@@ -675,6 +790,11 @@ function ReactorController:_makeStatus(info, state, currentInputRate, currentOut
         waitingForField = controlStatus == "throttled_field",
         producingTargetOutput = producingTarget,
         lastShutdownReason = self._lastShutdownReason,
+        restartPending = self:_isAwaitingGateRecoveryRestart(),
+        restartCooldownSeconds = self._config.restartCooldownSeconds,
+        restartCooldownRemainingSeconds = restartCooldownRemaining / 1000,
+        lastStartedAt = self._lastStartedAt,
+        lastStoppedAt = self._lastStoppedAt,
         hasFuel = remainingFuel > 0,
         peripherals = {
             reactor = self._lastPeripheralHealth.reactor,
@@ -787,6 +907,10 @@ function ReactorController.new(reactorPeripheral, inputGatePeripheral, outputGat
         _appliedInputRate = normalizeRate(persistedState and persistedState.appliedInputRate or 0),
         _appliedOutputRate = normalizeRate(persistedState and persistedState.appliedOutputRate or 0),
         _lastShutdownReason = persistedState and persistedState.lastShutdownReason or nil,
+        _restartAfterGateRecovery = not not (persistedState and persistedState.restartAfterGateRecovery),
+        _lastStartedAt = persistedState and persistedState.lastStartedAt or nil,
+        _lastStoppedAt = persistedState and persistedState.lastStoppedAt or nil,
+        _stopRequested = false,
         _lastInfo = nil,
         _lastWarnings = {},
         _lastError = stateError,
@@ -812,6 +936,7 @@ function ReactorController.new(reactorPeripheral, inputGatePeripheral, outputGat
         inputGate = bootstrapSnapshot.inputGate.connected,
         outputGate = bootstrapSnapshot.outputGate.connected,
     }
+    self._stopRequested = bootstrapSnapshot.currentState == STATE_STOPPING
 
     local bootstrapControlStatus = "stopped"
     if self._requestedMode == MODE_RUNNING then
@@ -894,9 +1019,15 @@ function ReactorController:setRateRampPerSecond(value)
     })
 end
 
+function ReactorController:setRestartCooldownSeconds(value)
+    return self:setConfig({ restartCooldownSeconds = value })
+end
+
 function ReactorController:start()
     self._requestedMode = MODE_RUNNING
-    self._lastShutdownReason = nil
+    if self._lastShutdownReason ~= "flow_gate_connection_lost" then
+        self._lastShutdownReason = nil
+    end
 
     local persisted, persistError = self:_persistState()
     if not persisted then
@@ -907,6 +1038,7 @@ end
 
 function ReactorController:stop()
     self._requestedMode = MODE_STOPPED
+    self._restartAfterGateRecovery = false
 
     local persisted, persistError = self:_persistState()
     if not persisted then
@@ -929,6 +1061,12 @@ function ReactorController:update(deltaTime)
     self._appliedInputRate = snapshot.currentInputRate
     self._appliedOutputRate = snapshot.currentOutputRate
 
+    if snapshot.currentState ~= STATE_RUNNING
+        and snapshot.currentState ~= STATE_STARTING
+        and snapshot.currentState ~= STATE_STOPPING then
+        self._stopRequested = false
+    end
+
     if not snapshot.reactorAvailable then
         return self:_holdRates(snapshot, "peripheral_error")
     end
@@ -941,17 +1079,25 @@ function ReactorController:update(deltaTime)
         controlStatus = "holding_output",
         actions = {},
         warnings = copyArray(snapshot.warnings),
+        timestamp = snapshot.now,
     }
 
     if self:_shouldEmergencyShutdownForGateLoss(snapshot) then
         return self:_handleFlowGateConnectionLoss(snapshot, plan)
     end
 
+    local handledRecoveryRestart, recoveryStatus = self:_handleGateRecoveryRestart(snapshot, plan)
+    if handledRecoveryRestart then
+        return recoveryStatus
+    end
+
     if self._requestedMode == MODE_STOPPED then
         plan.desiredOutputRate = 0
 
         if snapshot.currentState == STATE_RUNNING or snapshot.currentState == STATE_STARTING then
-            self:_callReactor("stopReactor", plan, "stop_reactor")
+            if not self._stopRequested then
+                self:_callReactor("stopReactor", plan, "stop_reactor")
+            end
             plan.desiredInputRate = self:_getStoppingInputRate(snapshot)
             plan.keepInputMinimum = true
             plan.reportedState = STATE_STOPPING
@@ -1014,7 +1160,9 @@ function ReactorController:update(deltaTime)
     if shouldShutdown then
         self._requestedMode = MODE_STOPPED
         self._lastShutdownReason = shutdownReason
-        self:_callReactor("stopReactor", plan, "stop_reactor")
+        if not self._stopRequested then
+            self:_callReactor("stopReactor", plan, "stop_reactor")
+        end
         plan.desiredInputRate = self:_getStoppingInputRate(snapshot)
         plan.desiredOutputRate = 0
         plan.keepInputMinimum = true
@@ -1142,6 +1290,22 @@ end
 
 function ReactorController:getControlStatus()
     return self:getStatus().controlStatus
+end
+
+function ReactorController:getLastStartedAt()
+    return self:getStatus().lastStartedAt
+end
+
+function ReactorController:getLastStoppedAt()
+    return self:getStatus().lastStoppedAt
+end
+
+function ReactorController:getRestartCooldownRemainingSeconds()
+    return self:getStatus().restartCooldownRemainingSeconds
+end
+
+function ReactorController:isRestartPending()
+    return self:getStatus().restartPending
 end
 
 function ReactorController:getLastWarnings()

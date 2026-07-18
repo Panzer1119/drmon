@@ -12,7 +12,7 @@ A fresh ComputerCraft/CC:Tweaked Lua reactor controller for a Draconic Evolution
 
 Passing peripheral names is recommended, because it lets the controller recover when peripherals disconnect and come back.
 If the reactor peripheral drops out, the controller holds the last known rates until the connection returns instead of making blind changes.
-If either flow gate drops out while the controller is active, the controller requests an emergency shutdown, cuts any still-connected output gate to `0`, and leaves itself in stopped mode until you explicitly call `start()` again.
+If either flow gate drops out while the controller is active, the controller requests an emergency shutdown, cuts any still-connected output gate to `0`, and remembers that the user still wanted the reactor running. Once both flow gates are back, it waits for the restart cooldown and then resumes the normal startup sequence automatically.
 
 ```lua
 local ReactorController = require("drmon.reactor_controller")
@@ -69,6 +69,7 @@ Useful optional values:
 | --- | --- |
 | `outputRampPerSecond` | Override the output ramp without changing the shared rate. |
 | `inputRampDownPerSecond` | Override the input trim speed without changing the shared rate. |
+| `restartCooldownSeconds` | Cooldown after a stop before an automatic restart from flow-gate recovery is allowed. Default `10`. |
 | `minInputRate` | Minimum field input while the controller is actively running or stopping. Clamped to at least `250000`. |
 | `startupInputRate` | Charging input floor before activation. |
 | `outputBoostCompensationRatio` | Extra field input added after an output increase. Default `0.5`. |
@@ -82,6 +83,7 @@ Useful optional values:
 - `update(deltaTime)`: runs the control loop, manages charging/activation/shutdown, and applies both gates after all calculations are complete.
 - `setConfig(partial)` plus targeted setters like `setTargetOutputRate(value)`.
 - `getStatus()`: returns the current telemetry snapshot, including controller status, field/fuel/saturation percentages, gate rates, net positive rate, and peripheral health.
+- `getLastStartedAt()`, `getLastStoppedAt()`, `getRestartCooldownRemainingSeconds()`, and `isRestartPending()` expose the persisted restart timing state.
 
 Useful status strings from `getStatus().controlStatus`:
 
@@ -89,6 +91,6 @@ Useful status strings from `getStatus().controlStatus`:
 - `throttled_temperature`: output is being held because temperature is too high to ramp further.
 - `ramping_output`: output is climbing toward the user target.
 - `at_target_output`: full target output is being produced.
-- `starting`, `stopping`, `needs_fuel`, `shutdown_requested`, `refuel_shutdown`, `peripheral_error`.
+- `starting`, `stopping`, `needs_fuel`, `shutdown_requested`, `restart_cooldown`, `refuel_shutdown`, `peripheral_error`.
 
-`getStatus().lastShutdownReason` includes `flow_gate_connection_lost` when a flow gate disconnect triggered the shutdown path.
+`getStatus().lastShutdownReason` includes `flow_gate_connection_lost` when a flow gate disconnect triggered the shutdown path, and the status also includes `lastStartedAt`, `lastStoppedAt`, `restartPending`, and `restartCooldownRemainingSeconds`.
