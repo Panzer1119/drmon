@@ -115,7 +115,19 @@ local function controlLoop()
 
                 reactor.currentOutput = 0
 
-                reactor:setGates(0, 0, config.minimumInputRate)
+                local chargeInput = config.minimumInputRate
+
+                if info.status == "warming_up" then
+
+                    local configuredChargeRate = tonumber(config.chargeRate)
+
+                    if configuredChargeRate then
+                        chargeInput = math.max(0, configuredChargeRate)
+                    end
+
+                end
+
+                reactor:setGates(chargeInput, 0, 0)
 
             end
 

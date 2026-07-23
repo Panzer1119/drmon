@@ -8,6 +8,7 @@ local defaultConfig = {
 
     requestedOutputRate = 1000000,
     minimumInputRate = 250000,
+    chargeRate = 1000000,
 
     outputRampPercent = 0.05,
     outputRampMinimum = 10000,
