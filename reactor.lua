@@ -3,7 +3,7 @@ local M = {}
 
 function M.new()
 
-    return {
+    return setmetatable({
 
         reactor = nil,
         input = nil,
@@ -12,7 +12,9 @@ function M.new()
         connected = false,
 
         currentOutput = 0
-    }
+    }, {
+        __index = M
+    })
 
 end
 
