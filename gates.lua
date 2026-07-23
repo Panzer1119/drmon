@@ -62,14 +62,27 @@ function M.calculate(
         allowedOutput = 0
     end
 
+    local outputGate
+
+    if temperaturePercent >= 0.90
+    and allowedOutput < currentOutputGate then
+
+    -- During high temperature conditions, drop output immediately
+    -- instead of ramping down slowly.
+        outputGate = allowedOutput
+
+    else
+
     -- Ramp output gate towards allowed output, but don't exceed the allowed output
-    local outputGate =
-        util.approach(
-            currentOutputGate,
-            allowedOutput,
-            outputRampPercent,
-            outputRampMinimum
-        )
+        outputGate =
+            util.approach(
+                currentOutputGate,
+                allowedOutput,
+                outputRampPercent,
+                outputRampMinimum
+            )
+
+    end
 
     return {
         inputGate = math.floor(inputGate),
