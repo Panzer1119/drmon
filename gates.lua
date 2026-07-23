@@ -15,6 +15,9 @@ function M.calculate(
     temperature,
     maxTemperature,
 
+    energySaturation,
+    maxEnergySaturation,
+
     targetOutput,
     currentOutputGate,
 
@@ -24,7 +27,10 @@ function M.calculate(
 
 )
 
--- Convert target field percent to a decimal value
+--------------------------------------------------
+-- Field control
+--------------------------------------------------
+
     local targetField = targetFieldPercent / 100
 
     -- Prevent division problems
@@ -34,14 +40,18 @@ function M.calculate(
         0.99
     )
 
-    -- RF/t required to maintain the target field level
+    -- Required RF/t to maintain target field
     local inputGate = fieldDrain / (1 - targetField)
+
+    --------------------------------------------------
+    -- Output safety limit
+    --------------------------------------------------
 
     local allowedOutput = targetOutput
 
     local temperaturePercent = temperature / maxTemperature
 
-    -- Start reducing output when temperature exceeds 90% of max temperature
+    -- Gradually reduce output above 90% temperature
     if temperaturePercent > 0.90 then
 
         local reduction = (temperaturePercent - 0.90) / 0.10
@@ -50,46 +60,97 @@ function M.calculate(
 
     end
 
-    -- Cut output completely if temperature exceeds max temperature
+    -- Emergency temperature cutoff
     if temperature >= maxTemperature then
         allowedOutput = 0
     end
 
-    -- Field percent is the current field level as a percentage of the maximum field level
+    -- Field safety
     local fieldPercent = (field / maxField) * 100
 
-    -- Cut output completely if field is below minimum field percent
     if fieldPercent < minFieldPercent then
         allowedOutput = 0
     end
 
+    --------------------------------------------------
+    -- Calculate reactor stress
+    --------------------------------------------------
+
+    local saturationPercent = energySaturation / maxEnergySaturation
+
+
+    -- Higher number = more dangerous
+    local temperatureStress = temperaturePercent
+
+    local saturationStress = 1 - saturationPercent
+
+
+    local fieldStress = 1 - (field / maxField)
+
+
+    -- Take the worst factor
+    local reactorStress =
+        math.max(
+            temperatureStress,
+            saturationStress,
+            fieldStress
+        )
+
+
+    -- Keep a minimum ramp speed
+    local rampMultiplier =
+        util.clamp(
+            1 - reactorStress,
+            0.05,
+            1
+        )
+
+
+    local dynamicRampPercent = outputRampPercent * rampMultiplier
+
+    local dynamicRampMinimum = outputRampMinimum * rampMultiplier
+
+    local dynamicRampMaximum = outputRampMaximum * rampMultiplier
+
+    --------------------------------------------------
+    -- Output ramping
+    --------------------------------------------------
+
     local outputGate
 
-    if temperaturePercent >= 0.90
-    and allowedOutput < currentOutputGate then
+    -- Immediate reduction if danger is increasing
+    if allowedOutput < currentOutputGate
+    and (
+    temperaturePercent > 0.90
+    or fieldPercent < minFieldPercent
+    ) then
 
-    -- During high temperature conditions, drop output immediately
-    -- instead of ramping down slowly.
         outputGate = allowedOutput
 
     else
 
-    -- Ramp output gate towards allowed output, but don't exceed the allowed output
         outputGate =
             util.approach(
                 currentOutputGate,
                 allowedOutput,
-                outputRampPercent,
-                outputRampMinimum,
-                outputRampMaximum
+                dynamicRampPercent,
+                dynamicRampMinimum,
+                dynamicRampMaximum
             )
 
     end
 
+
+
     return {
         inputGate = math.floor(inputGate),
         outputGate = math.floor(outputGate),
-        allowedOutput = math.floor(allowedOutput)
+        allowedOutput = math.floor(allowedOutput),
+
+        reactorStress = reactorStress,
+        temperaturePercent = temperaturePercent,
+        saturationPercent = saturationPercent,
+        fieldPercent = fieldPercent
     }
 
 end

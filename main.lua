@@ -91,6 +91,8 @@ local function controlLoop()
 
                         info.temperature,
                         config.maxTemperature,
+                        info.energySaturation,
+                        info.maxEnergySaturation,
 
                         config.requestedOutputRate,
 
