@@ -41,6 +41,30 @@ function M.connect(self)
 
     self.connected = true
 
+    local info = self:info()
+
+    if info and info.status == "running" then
+
+        local ok, outputFlow = pcall(self.output.getFlowOverride)
+
+        if (not ok) or type(outputFlow) ~= "number" then
+
+            ok, outputFlow = pcall(self.output.getFlow)
+
+        end
+
+        if ok and type(outputFlow) == "number" then
+            self.currentOutput = math.max(0, outputFlow)
+        else
+            self.currentOutput = 0
+        end
+
+    else
+
+        self.currentOutput = 0
+
+    end
+
     return true
 
 end
