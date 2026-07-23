@@ -12,6 +12,7 @@ local defaultConfig = {
 
     outputRampPercent = 0.05,
     outputRampMinimum = 10000,
+    outputRampMaximum = 100000,
 
     desiredState = "off",
 

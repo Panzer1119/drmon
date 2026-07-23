@@ -19,7 +19,8 @@ function M.calculate(
     currentOutputGate,
 
     outputRampPercent,
-    outputRampMinimum
+    outputRampMinimum,
+    outputRampMaximum
 
 )
 
@@ -79,7 +80,8 @@ function M.calculate(
                 currentOutputGate,
                 allowedOutput,
                 outputRampPercent,
-                outputRampMinimum
+                outputRampMinimum,
+                outputRampMaximum
             )
 
     end

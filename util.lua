@@ -18,7 +18,8 @@ function M.approach(
     current,
     target,
     percentageStep,
-    minimumStep
+    minimumStep,
+    maximumStep
 )
 
     local difference = target - current
@@ -32,6 +33,10 @@ function M.approach(
         math.abs(current) * percentageStep,
         minimumStep
     )
+
+    if type(maximumStep) == "number" then
+        step = math.min(step, math.max(0, maximumStep))
+    end
 
 
     step = math.min(

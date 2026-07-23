@@ -97,7 +97,8 @@ local function controlLoop()
                         reactor.currentOutput,
 
                         config.outputRampPercent,
-                        config.outputRampMinimum
+                        config.outputRampMinimum,
+                        config.outputRampMaximum
 
                     )
 
