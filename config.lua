@@ -33,7 +33,9 @@ function M.load()
 
     if not fs.exists(CONFIG_FILE) then
         M.save(defaultConfig)
-        return table.clone(defaultConfig)
+        data = {}
+        copyDefaults(data)
+        return data
     end
 
 
