@@ -105,7 +105,8 @@ local function controlLoop()
                 -- Input is applied first.
                 reactor:setGates(
                     values.inputGate,
-                    values.outputGate
+                    values.outputGate,
+                    config.minimumInputRate
                 )
 
 
@@ -113,7 +114,7 @@ local function controlLoop()
 
                 reactor.currentOutput = 0
 
-                reactor:setGates(0, 0)
+                reactor:setGates(0, 0, config.minimumInputRate)
 
             end
 

@@ -7,6 +7,7 @@ local defaultConfig = {
     maxTemperature = 8000,
 
     requestedOutputRate = 1000000,
+    minimumInputRate = 250000,
 
     outputRampPercent = 0.05,
     outputRampMinimum = 10000,

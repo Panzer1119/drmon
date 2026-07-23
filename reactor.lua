@@ -105,12 +105,17 @@ end
 function M.setGates(
     self,
     input,
-    output
+    output,
+    minimumInput
 )
 
     if not self.connected then
         return
     end
+
+    minimumInput = tonumber(minimumInput) or 0
+    minimumInput = math.max(0, minimumInput)
+    input = math.max(input, minimumInput)
 
     -- IMPORTANT:
     -- input first to protect shield
