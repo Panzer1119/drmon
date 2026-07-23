@@ -117,6 +117,8 @@ function M.setGates(
     minimumInput = math.max(0, minimumInput)
     input = math.max(input, minimumInput)
 
+    print("Setting gates: input=" .. input .. ", output=" .. output)
+
     -- IMPORTANT:
     -- input first to protect shield
 

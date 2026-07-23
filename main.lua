@@ -72,6 +72,7 @@ local function controlLoop()
 
         if info then
 
+            print("Reactor Status: " .. textutils.serialize(info))
             updateState(info)
 
             local output = 0
